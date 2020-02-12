@@ -39,7 +39,7 @@ class MainWindow:
         # separate thread and Tkinter library functions can only be called
         # from main thread. Use a queue to hold info form service and then
         # call the actual add_pendulum method in update.
-        s = rospy.Service('add_pendulum', AddPendulum, self.create_new_pendulum)
+        s = rospy.Service('/gui/add_pendulum', AddPendulum, self.create_new_pendulum)
         self.lock = threading.Lock()
         self.service_queue = []
 
@@ -48,7 +48,7 @@ class MainWindow:
         try:
             r = self.service_queue.pop(0)
             self.img.add_pendulum(
-                r.name, r.x, r.theta, r.base_fill_color, r.pendulum_fill_color)
+                r.name, r.x, r.theta, r.base_color, r.pendulum_color)
         except IndexError:
             pass
         self.lock.release()

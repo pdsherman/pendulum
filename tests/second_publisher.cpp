@@ -7,6 +7,8 @@
 */
 
 #include <pendulum/State.h>
+#include <pendulum/AddPendulum.h>
+
 #include <ros/ros.h>
 #include <iostream>
 #include <array>
@@ -68,11 +70,8 @@ State add_term(State state, const double dx, const double dt);
 // ******************* //
 int main(int argc, char *argv[])
 {
-  ros::init(argc, argv, "test_publisher");
+  ros::init(argc, argv, "test_model");
   ros::NodeHandle nh;
-
-  ros::Rate rate(50);
-  ros::Publisher pub = nh.advertise<pendulum::State>("TestPendulum", 10);
 
   // Ititial State
   State x0;
@@ -92,6 +91,26 @@ int main(int argc, char *argv[])
   State x1;
   Velocity v1;
 
+
+  // Add pendulum to gui
+  pendulum::AddPendulum srv;
+  srv.request.name  = "Simulated";
+  srv.request.x     = x0.x;
+  srv.request.theta = x0.theta;
+  srv.request.base_color = "blue";
+  srv.request.pendulum_color = "#FC33FF";
+
+  ros::ServiceClient client = nh.serviceClient<pendulum::AddPendulum>("/gui/add_pendulum");
+  if(client.exists()) {
+    client.call(srv);
+  } else {
+    std::cout << "AddPendulum service doesn't exits. Exiting program.\n";
+    return 0;
+  }
+
+  // Loop & publish simulated state data
+  ros::Rate rate(1/dt);
+  ros::Publisher pub = nh.advertise<pendulum::State>(srv.request.name, 10);
   while(ros::ok())
   {
     // x1 and x1_dot will be updated in runga_kutta

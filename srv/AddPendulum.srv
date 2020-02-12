@@ -1,7 +1,7 @@
 string name
 float32 x
 float32 theta
-string base_fill_color
-string pendulum_fill_color
+string base_color
+string pendulum_color
 ---
 bool result
