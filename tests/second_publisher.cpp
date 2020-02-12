@@ -25,8 +25,8 @@ static constexpr double m = 1.7; // kg
 static constexpr double M = 0.5; // kg
 
 static constexpr double l = 0.25;  // m, length to midpoint
-static constexpr double b = 1.5;  // kg/s
-static constexpr double r = 0.05;  // kg/s
+static constexpr double b_x = 1.5;  // kg/s
+static constexpr double b_t = 0.03;  // kg/s
 static constexpr double I = m*(2*l)*(2*l)/12.0;   // kg-m^2
 
 // ******************* //
@@ -75,8 +75,8 @@ int main(int argc, char *argv[])
 
   // Ititial State
   State x0;
-  x0.x = 0.75;
-  x0.theta = 15.0*PI/180.0;
+  x0.x = 1.00;
+  x0.theta = 89.0*PI/180.0;
 
   // Initial Velocity
   Velocity v0;
@@ -113,16 +113,19 @@ int main(int argc, char *argv[])
   ros::Publisher pub = nh.advertise<pendulum::State>(srv.request.name, 10);
   while(ros::ok())
   {
+    ros::spinOnce();
+
     // x1 and x1_dot will be updated in runga_kutta
     runga_kutta(x0, v0, x1, v1, 0.0, dt);
 
-    x0.header.stamp = ros::Time::now();
     x0 = x1;
     v0 = v1;
 
+    x0.header.seq += 1;
+    x0.header.stamp = ros::Time::now();
+
     t += dt;
     pub.publish(x0);
-    ros::spinOnce();
     rate.sleep();
   }
 
@@ -141,15 +144,15 @@ State ddxddt(const State &state, const Velocity &velocity, double u)
   static constexpr double I_ = I + ll;
 
   // Calculate acceleration of x
-  double k1 = -b*velocity.x;
+  double k1 = -b_x*velocity.x;
   double k2 = l*pow(velocity.x, 2.0)*cos(state.theta);
-  double k3 = -m*ll*g*sin(state.theta)*cos(state.theta)/I_ + u;
+  double k3 = -m*ll*(b_t*velocity.theta + g*cos(state.theta))*sin(state.theta)/I_ + u;
   double k4 = m_M - m*ll*pow(sin(state.theta), 2.0)/I_;
   accel.x = (k1 + k2 + k3)/k4;
 
   // Calculate rotational acceleration of theta
   double k5 = ml/I_;
-  double k6 = accel.x*sin(state.theta) - g*cos(state.theta) - r*velocity.theta;
+  double k6 = accel.x*sin(state.theta) - g*cos(state.theta) - b_t*velocity.theta;
   accel.theta = k5*k6;
 
   return accel;
