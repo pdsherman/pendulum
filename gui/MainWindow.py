@@ -11,6 +11,11 @@ Description: Simple gui to show pendulum with basic shapes
 from tkinter import *
 from tkinter.messagebox import askokcancel
 
+# ROS
+import threading
+import rospy
+from pendulum.srv import AddPendulum, AddPendulumResponse
+
 # Custom Frame objects
 from ButtonBar import ButtonBar
 from ImageCanvas import ImageCanvas
@@ -30,14 +35,34 @@ class MainWindow:
         self.img = ImageCanvas(self.root) # Display of pendulum
         self.quit = False # Flag for killing GUI
 
+        # ROS service server: Because AddPendulum will be serviced in a
+        # separate thread and Tkinter library functions can only be called
+        # from main thread. Use a queue to hold info form service and then
+        # call the actual add_pendulum method in update.
+        s = rospy.Service('add_pendulum', AddPendulum, self.create_new_pendulum)
+        self.lock = threading.Lock()
+        self.service_queue = []
+
     def update(self):
+        self.lock.acquire()
+        try:
+            r = self.service_queue.pop(0)
+            self.img.add_pendulum(
+                r.name, r.x, r.theta, r.base_fill_color, r.pendulum_fill_color)
+        except IndexError:
+            pass
+        self.lock.release()
+
         # https://stackoverflow.com/questions/29158220/tkinter-understanding-mainloop
         self.img.update_drawing()
         self.root.update_idletasks()
         self.root.update()
 
-    def create_new_pendulum(self, name, x0, theta0):
-        self.img.add_pendulum(name, x0, theta0)
+    def create_new_pendulum(self, req):
+        self.lock.acquire()
+        self.service_queue.append(req)
+        self.lock.release()
+        return AddPendulumResponse(True)
 
     def quit(self):
         if askokcancel("Verify Exit", "Really Quit?"):

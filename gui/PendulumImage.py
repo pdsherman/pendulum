@@ -13,27 +13,29 @@ from pendulum.msg import State
 class PendulumImage:
     def __init__(self, x0, theta0, name):
 
-        # Dimensions for base object
+        # Dimensions (pixels) for base object
         self.base_width  = 80.0
         self.base_height = 30.0
 
-        # Vertical position of moving base
+        # Vertical position (pixels) of moving base
         self.base_y = 275.0
 
         # Dimensions (pixels) for my fake pendulum
         self.length = 245.0
         self.width  = 15.0
 
+        # Converts x from m to pixels (1 m = 500 pixels)
+        self.scaling = 500.0
+
         # State Variables
-        self.x = x0
+        self.x = x0*self.scaling
         self.theta = theta0
 
         # ROS subscriber for updates to state
         self.sub = rospy.Subscriber(name, State, self.set_state)
 
     def set_state(self, state):
-        # Converts x from m to pixels (1 m = 1000 pixels)
-        self.x = state.x*500.0
+        self.x = state.x*self.scaling
 
         # Theta comes in radians
         self.theta = state.theta

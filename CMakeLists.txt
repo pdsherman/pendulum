@@ -28,6 +28,11 @@ add_message_files( DIRECTORY ${PROJECT_SOURCE_DIR}/msg
    State.msg
 )
 
+add_service_files( DIRECTORY ${PROJECT_SOURCE_DIR}/srv
+  FILES
+  AddPendulum.srv
+)
+
 generate_messages( DEPENDENCIES std_msgs )
 
 ###################################

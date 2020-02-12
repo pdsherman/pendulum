@@ -7,9 +7,8 @@ import time
 from MainWindow import MainWindow
 
 try:
-    rospy.init_node("gui", anonymous=True)
+    rospy.init_node("gui", anonymous=False)
     gui = MainWindow()
-    gui.create_new_pendulum("TestPendulum", 0.0, 0.0)
 
     while not rospy.is_shutdown() and not gui.exit_requested():
         gui.update()
