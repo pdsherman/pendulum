@@ -5,7 +5,7 @@ File:   gui.py
 Author: pdsherman
 Date:   Jan. 2020
 
-Description: Simple gui to show pendulum with basic shapes
+Description: Simple gui to display pendulums using basic shapes
 """
 # 3rd party GUI library
 from tkinter import *
