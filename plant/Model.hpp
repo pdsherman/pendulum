@@ -16,7 +16,7 @@
 class Model
 {
 public:
-  /// Since state already includes x and theta components,
+  /// Since State type already includes x and theta components,
   /// using for velocitys and acclerations. Renaming for readability
   using State = pendulum::State;
   using Velocity = State;
@@ -75,8 +75,7 @@ private:
   /// theta: Rotational velocity (rad/s)
   Velocity _velocity;
 
-  /// Current control input value.
-  /// Force (Newtons) exerted on movable base.
+  /// Control input value. Force (Newtons) exerted on movable base.
   double _u;
 
   /// Publisher for state value

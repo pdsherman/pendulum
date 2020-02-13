@@ -10,6 +10,7 @@ add_compile_options(
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
+  roslaunch
   std_msgs
   message_generation
 )
@@ -36,6 +37,8 @@ add_service_files( DIRECTORY ${PROJECT_SOURCE_DIR}/srv
 )
 
 generate_messages( DEPENDENCIES std_msgs )
+
+roslaunch_add_file_check(launch)
 
 ###################################
 ## catkin specific configuration ##

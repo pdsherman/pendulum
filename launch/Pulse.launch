@@ -1,0 +1,5 @@
+<launch>
+  <node name="gui" pkg="pendulum" type="gui.py" />
+  <node name="Simulation" pkg="pendulum" type="simulation" output="screen" />
+  <node name="control" pkg="pendulum" type="pulse_test" />
+</launch>
