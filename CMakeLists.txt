@@ -26,11 +26,13 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files( DIRECTORY ${PROJECT_SOURCE_DIR}/msg
    FILES
    State.msg
+   Control.msg
 )
 
 add_service_files( DIRECTORY ${PROJECT_SOURCE_DIR}/srv
   FILES
   AddPendulum.srv
+  ClearPendulums.srv
 )
 
 generate_messages( DEPENDENCIES std_msgs )
@@ -48,15 +50,11 @@ install( DIRECTORY gui/
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
     USE_SOURCE_PERMISSIONS )
 
-###########
-## Build ##
-###########
-
 ## Specify additional locations of header files
-## Your package locations should be listed before other locations
 include_directories(
-# include
+  ${PROJECT_SOURCE_DIR}
   ${catkin_INCLUDE_DIRS}
 )
 
 add_subdirectory( tests )
+add_subdirectory( plant )

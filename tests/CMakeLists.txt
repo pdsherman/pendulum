@@ -8,11 +8,12 @@ target_link_libraries( first_pub
 add_dependencies( first_pub ${PROJECT_NAME}_generate_messages )
 install(TARGETS first_pub RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION} )
 
-# Physics-based state publisher
-add_executable( second_pub
-  second_publisher.cpp )
-target_link_libraries( second_pub
+# Physics-based simulation
+add_executable( simulation
+  model_publisher.cpp )
+target_link_libraries( simulation
+  pendulum_model
   ${catkin_LIBRARIES} )
 
-add_dependencies( second_pub ${PROJECT_NAME}_generate_messages )
-install(TARGETS second_pub RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION} )
+add_dependencies( simulation ${PROJECT_NAME}_generate_messages )
+install(TARGETS simulation RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION} )
