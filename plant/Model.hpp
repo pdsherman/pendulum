@@ -9,6 +9,7 @@
 #pragma once
 
 #include <pendulum/State.h>
+#include <pendulum/Control.h>
 
 #include <ros/ros.h>
 
@@ -22,16 +23,21 @@ public:
   using Acceleration = State;
 
   /// Constructor
+  /// @param [in] nh ROS node handle object
+  /// @param [in] name Identifying name for pendulum object
+  /// @param [in] x0 Initial x-axis position of base
+  /// @param [in] theta0 Initial rotational position
   Model(ros::NodeHandle &nh, const std::string &name, double x0 = 0.0, double theta0 = 0.0);
 
-  /// Destructor
+  /// Default destructor
   ~Model(void) = default;
 
   /// Get the current values for the state position values
   /// @return State [x, theta]
   State get_current_state(void) const;
 
-
+  /// Publish current state
+  /// @param [in] time Time to use for header timestamp
   void publish(const ros::Time &time);
 
   /// Update the state of the system one time step in the future.
@@ -52,6 +58,10 @@ private:
   /// @return [state.x + dx, state.theta + dt]
   State add_term(State state, const double dx, const double dt) const;
 
+  /// Callback method for control subscriber to update control value
+  /// @param [in] msg Published control message
+  void set_control(const pendulum::ControlConstPtr &msg);
+
   /// Identifying name for object
   std::string _name;
 
@@ -69,8 +79,11 @@ private:
   /// Force (Newtons) exerted on movable base.
   double _u;
 
-  /// ROS publisher for state value
+  /// Publisher for state value
   ros::Publisher _state_pub;
+
+  /// Subscriber for control value
+  ros::Subscriber _control_sub;
 
   // *********************** //
   //   Simulation Constants  //
@@ -84,7 +97,6 @@ private:
   static constexpr double b_t = 0.03; ///< Rotational friction of pendulum (kg/s)
   static constexpr double I   = m*(2*l)*(2*l)/12.0; //< moment of Inertia (kg-m^2)
 
-  static constexpr double PI = 3.14159;
-  static constexpr double g = 9.80665; //< acceleration from gravity (m/s^2)
+  static constexpr double g = 9.80665;  //< acceleration from gravity (m/s^2)
 
 };

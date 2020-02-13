@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
   ros::init(argc, argv, "Simulation");
   ros::NodeHandle nh;
 
-  double x0     = 1.00;
+  double x0     = 0.2;
   double theta0 = 89.0*3.14/180.0;
   std::string name = "Simulated";
 
@@ -37,8 +37,7 @@ int main(int argc, char *argv[])
   if(client.exists()) {
     client.call(srv);
   } else {
-    std::cout << "AddPendulum service doesn't exits. Exiting program.\n";
-    return 0;
+    std::cout << "AddPendulum service doesn't exits. Unable to call but continuing program.\n";
   }
 
   // Loop & publish simulated state data

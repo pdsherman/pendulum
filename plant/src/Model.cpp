@@ -2,13 +2,13 @@
 #include <plant/Model.hpp>
 
 Model::Model(ros::NodeHandle &nh, const std::string &name, double x0, double theta0) :
-  _name(name), _state(), _velocity(), _u(0.0)
+  _name(name), _state(), _velocity(), _u(0.0),
+  _state_pub(nh.advertise<pendulum::State>(name, 50)),
+  _control_sub(nh.subscribe("control", 100, &Model::set_control, this))
 {
   _state.header.seq = 0;
   _state.x = x0;
   _state.theta = theta0;
-
-  _pub = nh.advertise<pendulum::State>(name, 50);
 }
 
 Model::State Model::get_current_state(void) const
@@ -21,7 +21,7 @@ void Model::publish(const ros::Time &time)
   _state.header.seq += 1;
   _state.header.stamp = time;
 
-  _pub.publish(_state);
+  _state_pub.publish(_state);
 }
 
 void Model::update(const double h)
@@ -105,4 +105,9 @@ Model::State Model::add_term(State state, const double dx, const double dt) cons
   state.x += dx;
   state.theta += dt;
   return state;
+}
+
+void Model::set_control(const pendulum::Control::ConstPtr &msg)
+{
+  _u = msg->u;
 }

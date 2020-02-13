@@ -17,3 +17,12 @@ target_link_libraries( simulation
 
 add_dependencies( simulation ${PROJECT_NAME}_generate_messages )
 install(TARGETS simulation RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION} )
+
+# Publish single control pulse
+add_executable( pulse_test
+  pulse_test.cpp )
+target_link_libraries( pulse_test
+  ${catkin_LIBRARIES} )
+
+add_dependencies( pulse_test ${PROJECT_NAME}_generate_messages )
+install(TARGETS pulse_test RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION} )
