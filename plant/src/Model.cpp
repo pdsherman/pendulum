@@ -26,8 +26,11 @@ void Model::publish(const ros::Time &time)
 
 void Model::update(const double h)
 {
-  std::array<double, 4> kx, kt, fx, ft;
+  /// Method will calculate the state of the system one
+  /// time step in the future by using classical 4th order
+  /// Runga-Kutta numerical sovler.
 
+  std::array<double, 4> kx, kt, fx, ft;
   for(int ii = 0; ii < 4; ++ii) {
     double dx, dt, ddx, ddt;
     switch(ii){

@@ -33,7 +33,7 @@ add_message_files( DIRECTORY ${PROJECT_SOURCE_DIR}/msg
 add_service_files( DIRECTORY ${PROJECT_SOURCE_DIR}/srv
   FILES
   AddPendulum.srv
-  ClearPendulums.srv
+  RemovePendulum.srv
 )
 
 generate_messages( DEPENDENCIES std_msgs )

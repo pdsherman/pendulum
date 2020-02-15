@@ -15,6 +15,7 @@ from tkinter.messagebox import askokcancel
 import threading
 import rospy
 from pendulum.srv import AddPendulum, AddPendulumResponse
+from pendulum.srv import RemovePendulum, RemovePendulumResponse
 
 # Custom Frame objects
 from ButtonBar import ButtonBar
@@ -39,16 +40,21 @@ class MainWindow:
         # separate thread and Tkinter library functions can only be called
         # from main thread. Use a queue to hold info form service and then
         # call the actual add_pendulum method in update.
-        s = rospy.Service('/gui/add_pendulum', AddPendulum, self.create_new_pendulum)
         self.lock = threading.Lock()
         self.service_queue = []
+
+        rospy.Service('/gui/add_pendulum', AddPendulum, self.create_new_pendulum)
+        rospy.Service('/gui/remove_pendulum', RemovePendulum, self.remove_pendulum)
 
     def update(self):
         self.lock.acquire()
         try:
             r = self.service_queue.pop(0)
-            self.img.add_pendulum(
-                r.name, r.x, r.theta, r.base_color, r.pendulum_color)
+            if(r[0] == "add"):
+                self.img.add_pendulum(
+                    r[1].name, r[1].x, r[1].theta, r[1].base_color, r[1].pendulum_color)
+            elif r[0] == "remove":
+                self.img.remove_pendulum(r[1].name)
         except IndexError:
             pass
         self.lock.release()
@@ -60,9 +66,15 @@ class MainWindow:
 
     def create_new_pendulum(self, req):
         self.lock.acquire()
-        self.service_queue.append(req)
+        self.service_queue.append(("add", req))
         self.lock.release()
         return AddPendulumResponse(True)
+
+    def remove_pendulum(self, req):
+        self.lock.acquire()
+        self.service_queue.append(("remove", req))
+        self.lock.release()
+        return RemovePendulumResponse(True)
 
     def quit(self):
         if askokcancel("Verify Exit", "Really Quit?"):
