@@ -31,6 +31,7 @@ void Model::update(const double h)
   /// Runga-Kutta numerical sovler.
 
   std::array<double, 4> kx, kt, fx, ft;
+
   for(int ii = 0; ii < 4; ++ii) {
     double dx, dt, ddx, ddt;
     switch(ii){

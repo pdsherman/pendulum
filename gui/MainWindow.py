@@ -38,8 +38,8 @@ class MainWindow:
 
         # ROS service server: Because AddPendulum will be serviced in a
         # separate thread and Tkinter library functions can only be called
-        # from main thread. Use a queue to hold info form service and then
-        # call the actual add_pendulum method in update.
+        # from main thread. Use a queue to hold info from service and then
+        # call the actual gui methods in update.
         self.lock = threading.Lock()
         self.service_queue = []
 
@@ -59,8 +59,9 @@ class MainWindow:
             pass
         self.lock.release()
 
-        # https://stackoverflow.com/questions/29158220/tkinter-understanding-mainloop
+        # Update Image
         self.img.update_drawing()
+        # https://stackoverflow.com/questions/29158220/tkinter-understanding-mainloop
         self.root.update_idletasks()
         self.root.update()
 

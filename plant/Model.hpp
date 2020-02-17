@@ -92,10 +92,10 @@ private:
   static constexpr double M = 0.5; //< mass of base (kilogram)
 
   static constexpr double l   = 0.25; //< length to midpoint (meters)
-  static constexpr double b_x = 1.5;  //< Linear friction for base (kg/s)
+  static constexpr double b_x = 2.5;  //< Linear friction for base (kg/s)
   static constexpr double b_t = 0.03; ///< Rotational friction of pendulum (kg/s)
-  static constexpr double I   = m*(2*l)*(2*l)/12.0; //< moment of Inertia (kg-m^2)
+  static constexpr double I   = m*(2*l)*(2*l)/12.0; //< Moment of Inertia (kg-m^2)
 
-  static constexpr double g = 9.80665;  //< acceleration from gravity (m/s^2)
+  static constexpr double g = 9.80665;  //< Acceleration from gravity (m/s^2)
 
 };

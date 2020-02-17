@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
 
   // Initial conditions
   double x0     = 0.2;
-  double theta0 = 89.0*3.14/180.0;
+  double theta0 = 1.3;
   std::string name = "Simulated";
 
   // Attempt to Add pendulum to gui. Exit if servicer server doesn't start up in time.
@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
     ros::Rate(2).sleep();
     ++count;
   }
-  
+
   if(count >= 10) {
     ROS_WARN("Timeout waiting for AddPendulum service to exist. Kill Simulation node.");
     return 0;

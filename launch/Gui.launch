@@ -1,0 +1,3 @@
+<launch>
+  <node name="gui" pkg="pendulum" type="gui.py" />
+</launch>

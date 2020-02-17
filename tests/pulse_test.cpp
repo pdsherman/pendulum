@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
     ctrl.header.seq += 1;
     ctrl.header.stamp = ros::Time::now();
 
-    if( t >= 5.0 && t < 5.1) {
+    if( t >= 5.0 && t < 5.2) {
       ctrl.u = 10.0;
     } else {
       ctrl.u = 0.0;
