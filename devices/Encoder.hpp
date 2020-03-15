@@ -44,10 +44,8 @@ public:
   /// @return Encoder position in counts
   int32_t raw_count(void);
 
-  /// Set the current positino of the encoder to 0
+  /// Set the current position of the encoder sensor to 0
   void zero_position(void);
-
-  void all_data(int32_t &pos, int16_t &sldr);
 
 private:
 

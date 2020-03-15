@@ -67,23 +67,6 @@ int32_t Encoder::raw_count(void)
   return pos;
 }
 
-void Encoder::all_data(int32_t &pos, int16_t &sldr)
-{
-  int8_t data[6];
-  if(_is_open) {
-    int num = ::read(_file_des, data, 6);
-    if(num != 6) {
-      std::cout << "Error On Read" << std::endl;
-    }
-
-    pos = data[0] + (static_cast<int32_t>(data[1]) << 8)
-          + (static_cast<int32_t>(data[2]) << 16)
-          + (static_cast<int32_t>(data[3]) << 24);
-
-    sldr = data[5] + (static_cast<int32_t>(data[6]) << 8);
-  }
-}
-
 void Encoder::zero_position(void)
 {
   if(_is_open){
