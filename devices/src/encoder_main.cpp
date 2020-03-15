@@ -54,11 +54,11 @@ int main(int argc, char *argv[])
 
   const double dt = 0.02; // Time step
   ros::Rate rate(1/dt);
+
   while(ros::ok()) {
 
-    double pos = static_cast<double>(encdr.position());
-    double rad = 3.14159*(pos/90.0 + 0.25);
-    state.theta = rad;
+    state.x = 1.5; 
+    state.theta = encdr.position();
     state.header.stamp = ros::Time::now();
 
     // publish
