@@ -60,4 +60,6 @@ include_directories(
 )
 
 add_subdirectory( tests )
+#add_subdirectory( control )
+add_subdirectory( devices )
 add_subdirectory( plant )

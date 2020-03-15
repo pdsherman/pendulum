@@ -14,6 +14,8 @@
 #include <ros/ros.h>
 #include <ros/console.h>
 
+#include <chrono>
+#include <numeric> // accumulate
 
 int main(int argc, char *argv[])
 {
@@ -50,6 +52,8 @@ int main(int argc, char *argv[])
   const double dt = 0.02; // Time step
   ros::Rate rate(1/dt);
 
+  std::vector<double> t;
+
   Model pendulum(nh, name, x0, theta0);
   while(ros::ok())
   {
@@ -57,12 +61,21 @@ int main(int argc, char *argv[])
     ros::spinOnce();
 
     // Simulate system one time step forward.
+    auto start = std::chrono::high_resolution_clock::now();
     pendulum.update(dt);
+    auto stop = std::chrono::high_resolution_clock::now();
+
     pendulum.publish(ros::Time::now());
+
+    auto dt = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
+    t.push_back(static_cast<double>(dt.count())/1000.0);
 
     // Sleep until next cycle
     rate.sleep();
   }
+
+  double avg = std::accumulate(t.begin(), t.end(), 0.0) / t.size();
+  std::cout << "Average Time: " << avg << " us" << std::endl;
 
   return 0;
 }
