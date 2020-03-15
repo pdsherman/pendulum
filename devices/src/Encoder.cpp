@@ -45,8 +45,6 @@ int32_t Encoder::position(void)
     int num = ::read(_file_des, &pos, 4);
     if(num != 4) {
       std::cout << "Error On Read" << std::endl;
-    } else {
-      std::cout << "POS: " << pos << std::endl;
     }
   }
 

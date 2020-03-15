@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 
     double pos = static_cast<double>(encdr.position());
     double rad = 3.14159*(pos/90.0 + 0.25);
-    state.x = rad;
+    state.theta = rad;
     state.header.stamp = ros::Time::now();
 
     // publish
