@@ -12,7 +12,8 @@ Encoder::Encoder(const std::string &i2c_dev, const uint8_t addr) :
   _is_open(false),
   _dev_name(i2c_dev),
   _slave_addr(addr),
-  _file_des(-1)
+  _file_des(-1),
+  _offset_radians(0.0)
 {
 }
 
@@ -38,7 +39,22 @@ bool Encoder::close_port(void)
   return !(_file_des != -1 && ::close(_file_des) < 0);
 }
 
-int32_t Encoder::position(void)
+double Encoder::position(void)
+{
+  return static_cast<double>(raw_count())*cnt_to_rad - _offset_radians;
+}
+
+void Encoder::set_offset(const double offset_rad)
+{
+  _offset_radians = offset_rad;
+}
+
+double Encoder::get_offset(void) const
+{
+  return _offset_radians;
+}
+
+int32_t Encoder::raw_count(void)
 {
   int32_t pos = 0;
   if(_is_open) {

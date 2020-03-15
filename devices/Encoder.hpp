@@ -25,9 +25,24 @@ public:
   /// @return True if connection successful
   bool connect(void);
 
-  /// Read the position of the encoder
+  /// Get the position of the encoder
+  /// Will convert counts to radians and subtract offset if set by user
+  /// @return Position in radians
+  double position(void);
+
+  /// Set an offset in softare for convenience
+  /// when calling position method
+  /// @param [in] offset_rad Offset in radians
+  void set_offset(const double offset_rad);
+
+  /// Get the current position offset
+  /// @return Offset set by user
+  double get_offset(void) const;
+
+  /// Get raw count value from encoder
+  /// @note Ignores offset
   /// @return Encoder position in counts
-  int32_t position(void);
+  int32_t raw_count(void);
 
   /// Set the current positino of the encoder to 0
   void zero_position(void);
@@ -51,4 +66,12 @@ private:
 
   /// File descriptor for connection
   int _file_des;
+
+  /// Offset to subtract (in radians) from position when calling position method
+  double _offset_radians;
+
+  /// Converting encoder counts to radians
+  static constexpr double cpr = 1600.0;
+  static constexpr double pi  = 3.14159;
+  static constexpr double cnt_to_rad = 2*pi/cpr;
 };
