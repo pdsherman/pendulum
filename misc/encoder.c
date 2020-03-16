@@ -34,7 +34,8 @@ void main(void) {
     
     prev_portb_state = PORTBbits;
     
-    while(true) {}
+    while(true) {
+    }
     
     return;
 }
@@ -43,11 +44,13 @@ void main(void) {
 void configure_device(void)
 {   
     //----- Clock -----//
-    OSCCONbits.IRCF = 0b110; // 4 MHz for internal oscillator
+    OSCCONbits.IRCF = 0b111; // 8 MHz for internal oscillator
     
     //----- GPIO -----//
+    // 2 pins setup I2C (RB4, RB6)
+    // 2 pins GPIO for encoder (RB5, RB7)
     
-    // No analog inputs
+    // Analog input
     ANSEL  = 0;
     ANSELH = 0;
     
@@ -58,7 +61,6 @@ void configure_device(void)
     // Interrupt on change
     IOCBbits.IOCB5 = 1;
     IOCBbits.IOCB7 = 1;
-    
     
     //----- I2C -----//
     
@@ -74,7 +76,6 @@ void configure_device(void)
     // Setup I2C Address
     SSPADD = 0x28 << 1;
 
-    
     //----- Interrupts -----//
     PIE1bits.SSPIE = 1; // Enable SSP interrupt
     
@@ -92,7 +93,7 @@ void interrupt isr(void)
 {
     
     if(INTCONbits.RABIF) {
-        // Encoder Interrupt
+        //------- Encoder Interrupt Response -------//
         if(prev_portb_state.RB5 != PORTBbits.RB5) {
             // Change on signal A
             if(PORTBbits.RB5) {
@@ -129,27 +130,32 @@ void interrupt isr(void)
         prev_portb_state = PORTBbits;
         INTCONbits.RABIF = 0;
     } else if(PIR1bits.SSPIF) {
-        // I2C Interrupt
+        //------- I2C Interrupt Response -------//
         
         static int count = 0;
         uint8_t data = SSPBUF;
         
         
-        if(!SSPSTATbits.DATA_ADDRESS) {
-            if(SSPSTATbits.READ_WRITE) {
+        if(SSPSTATbits.READ_WRITE) {
+            if(SSPSTATbits.DATA_ADDRESS) {
+                count += 1;
+            } else {
+                count = 0;
+            }
+            
+            if(count < 4) {
                 SSPBUF = (uint8_t)(pos >> (count*8));
             } else {
+                SSPBUF = 0;
+            }
+        } else {
+            if(SSPSTATbits.DATA_ADDRESS) {
                 if(data == CMD_ZERO) {
                     pos = 0;
                 }
             }
-            
-            count += 1;
-        } else {
-            count = 0;
         }
-            
-    
+        
         SSPCONbits.CKP = 1;
         PIR1bits.SSPIF = 0;
     }
