@@ -41,7 +41,7 @@ bool Encoder::close_port(void)
 
 double Encoder::position(void)
 {
-  return static_cast<double>(raw_count())*cnt_to_rad - _offset_radians;
+  return static_cast<double>(raw_count())*cnt_to_rad + _offset_radians;
 }
 
 void Encoder::set_offset(const double offset_rad)
