@@ -12,6 +12,8 @@
 
 #include <ros/ros.h>
 
+#define PI 3.14159
+
 int main(int argc, char *argv[])
 {
   ros::init(argc, argv, "Encoder");
@@ -31,7 +33,7 @@ int main(int argc, char *argv[])
   }
 
   pendulum::State state;
-  state.x = 1.5;
+  state.x = 1.0;
   state.theta = 0.785;
 
   pendulum::AddPendulum srv;
@@ -51,13 +53,14 @@ int main(int argc, char *argv[])
   }
 
   encdr.zero_position();
+  encdr.set_offset(PI/2.0);
 
   const double dt = 0.02; // Time step
   ros::Rate rate(1/dt);
 
   while(ros::ok()) {
 
-    state.x = 1.5; 
+    state.x = 1.0; 
     state.theta = encdr.position();
     state.header.stamp = ros::Time::now();
 
