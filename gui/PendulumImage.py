@@ -29,7 +29,8 @@ class PendulumImage:
         self.scaling = 500.0
 
         # Iitialize State
-        set_state(x0, theta0)
+        self.x = x0*self.scaling
+        self.theta = theta0
 
         # ROS subscriber for updates to state
         self.sub = rospy.Subscriber(name, State, self.set_state)

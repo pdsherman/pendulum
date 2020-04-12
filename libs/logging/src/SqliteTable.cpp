@@ -57,6 +57,8 @@ bool SqliteTable::create_table(void) {
 
 void SqliteTable::subscribe(ros::NodeHandle &nh, const std::string &topic)
 {
+  std::string note = "Subscribing to " + topic;
+  ROS_INFO(note.c_str());
   _subscriber = nh.subscribe(topic, 100, &SqliteTable::callback, this);
 }
 

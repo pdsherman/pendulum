@@ -8,7 +8,6 @@
  */
 
 #include <pendulum/State.h>
-#include <pendulum/Datapoint.h>
 #include <pendulum/AddPendulum.h>
 #include <pendulum/StartLogging.h>
 
@@ -53,6 +52,7 @@ int main(int argc, char *argv[])
 
   // TODO: Remove and place in better position eventually
   pendulum::StartLogging log_srv;
+  log_srv.request.topic_name = gui_srv.request.name;
   log_srv.request.table_name = "TestTable";
   log_srv.request.start_time = ros::Time::now();
   logging_client.call(log_srv);
@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
 
   while(ros::ok()) {
 
-    state.x = 1.0; 
+    state.x = 1.0;
     state.theta = encdr.position();
     state.header.stamp = ros::Time::now();
 
