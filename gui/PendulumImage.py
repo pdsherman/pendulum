@@ -24,12 +24,12 @@ class PendulumImage:
         self.length = 245.0
         self.width  = 15.0
 
-        # Converts x from m to pixels (1 m = 500 pixels)
+        # State variable x is in meters
+        # Sacling converts x to pixels (1 m = 500 pixels)
         self.scaling = 500.0
 
-        # State Variables
-        self.x = x0*self.scaling
-        self.theta = theta0
+        # Iitialize State
+        set_state(x0, theta0)
 
         # ROS subscriber for updates to state
         self.sub = rospy.Subscriber(name, State, self.set_state)

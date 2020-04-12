@@ -1,9 +1,12 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(pendulum)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 add_compile_options(
   $<$<COMPILE_LANGUAGE:C>:-std=c11>
   $<$<COMPILE_LANGUAGE:CXX>:-std=c++0x>
+  $<$<COMPILE_LANGUAGE:CXX>:-lsqlite3>
   -Wall
 )
 
@@ -34,6 +37,7 @@ add_service_files( DIRECTORY ${PROJECT_SOURCE_DIR}/srv
   FILES
   AddPendulum.srv
   RemovePendulum.srv
+  StartLogging.srv
 )
 
 generate_messages( DEPENDENCIES std_msgs )
@@ -59,7 +63,15 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
+# Find SQLite3
+find_package (SQLite3)
+if (SQLITE3_FOUND)
+  message("FOUND SQLITE")
+  #include_directories(${SQLITE3_INCLUDE_DIRS})
+endif (SQLITE3_FOUND)
+
 add_subdirectory( tests )
 #add_subdirectory( control )
 add_subdirectory( devices )
 add_subdirectory( plant )
+add_subdirectory( libs )

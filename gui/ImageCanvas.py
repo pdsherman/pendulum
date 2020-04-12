@@ -15,8 +15,7 @@ class ImageCanvas(Canvas):
     def __init__(self, parent=None, width=350, height=300, **options):
         Canvas.__init__(self, parent, **options)
 
-        self.config(width=width, height=height, bd=3, relief=RIDGE)
-        self.config(bg='#333333')
+        self.config(width=width, height=height, bd=3, relief=RIDGE, bg='#333333')
         self.pack(fill=BOTH, expand=True, side=LEFT)
 
         # Single Line Showing x-axis
