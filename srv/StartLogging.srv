@@ -1,0 +1,5 @@
+string table_name
+string topic_name
+time start_time
+---
+bool success
