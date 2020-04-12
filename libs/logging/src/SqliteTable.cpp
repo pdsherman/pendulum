@@ -35,7 +35,7 @@ bool SqliteTable::create_table(void) {
   if(!_db || _table_name.empty()) { return false; }
 
   std::string cmd = "CREATE TABLE IF NOT EXISTS " + _table_name;
-  cmd += " (timestamp REAL, test_time REAL, x REAL, theta REAL)";
+  cmd += " (timestamp REAL, test_time_s REAL, x REAL, theta REAL)";
 
   sqlite3_stmt *st = nullptr;
   if(sqlite3_prepare_v2(_db.get(), cmd.c_str(), -1, &st, nullptr) != SQLITE_OK) {
@@ -55,10 +55,9 @@ bool SqliteTable::create_table(void) {
   return true;
 }
 
-void SqliteTable::subscribe(ros::NodeHandle &nh, const std::string &topic)
+void SqliteTable::subscribe(ros::NodeHandle &nh, std::string &topic)
 {
-  std::string note = "Subscribing to " + topic;
-  ROS_INFO(note.c_str());
+  topic.insert(0, "/");
   _subscriber = nh.subscribe(topic, 100, &SqliteTable::callback, this);
 }
 
@@ -67,19 +66,23 @@ void SqliteTable::callback(const pendulum::State::ConstPtr &msg)
   double timestamp = msg->header.stamp.toSec();
   double theta     = msg->theta;
   double x         = msg->x;
-  double test_time = 0.0;
-  //double test_time = ?? calculate with timestamp
+  double test_time = (msg->header.stamp - _test_start_time).toSec();
 
   if(!insert_row(timestamp, test_time, x, theta)) {
       ROS_WARN("Failure to insert row into database table");
   }
 }
 
+void SqliteTable::set_start_time(ros::Time start_time)
+{
+  _test_start_time = start_time;
+}
+
 bool SqliteTable::insert_row(const double timestamp, const double test_time, const double x, const double theta) {
   if(!_db || !_table_exists) { return false; }
 
   std::string cmd = "INSERT INTO " + _table_name;
-  cmd += " (timestamp, test_time, x, theta) VALUES (:ts, :tt, :x, :theta)";
+  cmd += " (timestamp, test_time_s, x, theta) VALUES (:ts, :tt, :x, :theta)";
 
   sqlite3_stmt *st = nullptr;
   if(sqlite3_prepare_v2(_db.get(), cmd.c_str(), -1, &st, nullptr) != SQLITE_OK) {

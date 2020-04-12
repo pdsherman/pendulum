@@ -67,18 +67,18 @@ int main(int argc, char *argv[])
     return 0;
   }
   encdr.zero_position();
-  encdr.set_offset(PI/2.0);
+  encdr.set_offset(-PI/2.0);
 
   const double dt = 0.02; // Time step
   ros::Rate rate(1/dt);
 
   while(ros::ok()) {
-
+    // update state variable
     state.x = 1.0;
     state.theta = encdr.position();
     state.header.stamp = ros::Time::now();
 
-    // publish
+    // publish and delay
     pub.publish(state);
     ros::spinOnce();
     rate.sleep();

@@ -19,7 +19,7 @@
 #include <string>
 
 static const std::string db_filename = "EncoderData.db";
-static std::vector<std::unique_ptr<SqliteTable>> tables;
+static std::shared_ptr<SqliteTable> table;
 
 int main(int argc, char* argv[])
 {
@@ -28,26 +28,36 @@ int main(int argc, char* argv[])
 
   // Lambda used to be able to capture the Nodehandle object and be used in the callback function
   boost::function<bool(pendulum::StartLogging::Request &, pendulum::StartLogging::Response &)> logging_cb =
-  [&nh](pendulum::StartLogging::Request &req, pendulum::StartLogging::Response &res) {
-    std::unique_ptr<SqliteTable> table = std::unique_ptr<SqliteTable>(new SqliteTable(req.table_name));
+  [&nh](pendulum::StartLogging::Request &req, pendulum::StartLogging::Response &res)
+  {
+    if(!table) {
+      table = std::make_shared<SqliteTable>(req.table_name);
 
-    if(table->open_database(db_filename) && table->create_table()){
-      table->subscribe(nh, req.topic_name);
-      tables.push_back(std::move(table));
-      res.success = true;
+      if(table->open_database(db_filename) && table->create_table()){
+        table->set_start_time(req.start_time);
+        table->subscribe(nh, req.topic_name);
+        res.success = true;
+      } else {
+        res.success = false;
+      }
     } else {
-      res.success = false;
+      ROS_WARN("Table already created");
     }
+
     return true;
   };
 
   ros::ServiceServer start_logging_server = nh.advertiseService("start_log", logging_cb);
 
-  ros::Rate rate(500);
-  while(ros::ok()) {
-    ros::spinOnce();
-    rate.sleep();
-  }
+  ros::Time s = ros::Time::now();
+
+  std::cout << " sec: " << s.sec << std::endl;
+  std::cout << "nsec: " << s.nsec << std::endl;
+
+  std::cout << s.toSec() << std::endl;
+  std::cout << s.toNSec() << std::endl;
+
+  ros::spin();
 
   return 0;
 }

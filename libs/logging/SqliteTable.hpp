@@ -39,14 +39,18 @@ public:
   /// Subscribe table to topic to begin logging to database
   /// @param [in] nh ROS node handle object
   /// @param [in] topic Name of the ROS topic to subscribe to
-  void subscribe(ros::NodeHandle &nh, const std::string &topic);
+  void subscribe(ros::NodeHandle &nh, std::string &topic);
 
-private:
   /// Callback function for the ROS subscriber. Inserts
   /// row into table.
   /// @param [in] msg Published datapoint
   void callback(const pendulum::State::ConstPtr &msg);
 
+  /// Set the start test start time
+  /// @param [in] start_time Time to set for start
+  void set_start_time(ros::Time start_time);
+
+private:
   /// Insert row into table
   /// @param [in] timestamp Timestamp when datapoint sampled
   /// @param [in] test_time Time from the start of the test
@@ -66,6 +70,9 @@ private:
 
   /// Does the table exisit in the database
   bool _table_exists;
+
+  /// Test start time
+  ros::Time _test_start_time;
 
   /// Flags for creating table
   static constexpr int kDbFlags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;

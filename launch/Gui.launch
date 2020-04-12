@@ -1,4 +1,4 @@
 <launch>
   <node name="gui" pkg="pendulum" type="gui.py" />
-  <node name="logging" pkg="pendulum" type="sql_node" output="screen" />
+  <node name="sqlite" pkg="pendulum" type="sql_node" output="screen" />
 </launch>
