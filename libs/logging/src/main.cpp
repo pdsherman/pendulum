@@ -39,6 +39,7 @@ int main(int argc, char* argv[])
         res.success = true;
       } else {
         res.success = false;
+        ROS_WARN("Failed to open DB or create table");
       }
     } else {
       ROS_WARN("Table already created");
@@ -48,15 +49,6 @@ int main(int argc, char* argv[])
   };
 
   ros::ServiceServer start_logging_server = nh.advertiseService("start_log", logging_cb);
-
-  ros::Time s = ros::Time::now();
-
-  std::cout << " sec: " << s.sec << std::endl;
-  std::cout << "nsec: " << s.nsec << std::endl;
-
-  std::cout << s.toSec() << std::endl;
-  std::cout << s.toNSec() << std::endl;
-
   ros::spin();
 
   return 0;

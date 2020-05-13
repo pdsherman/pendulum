@@ -79,5 +79,5 @@ private:
 
   /// Directory for database
   static constexpr const char *const kDatabaseDirectory =
-              "/home/pdsherman/projects/pendulum/catkin_ws/src/pendulum/libs/logging/data/";
+              "/home/pdsherman/projects/pendulum/catkin_ws/src/pendulum/data/";
 };

@@ -18,6 +18,30 @@ target_link_libraries( simulation
 add_dependencies( simulation ${PROJECT_NAME}_generate_messages )
 install(TARGETS simulation RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION} )
 
+
+# Physics-based simulation of simple model
+add_executable( simple_simulation
+  simple_model_publisher.cpp )
+target_link_libraries( simple_simulation
+  pendulum_simple_model
+  util
+  ${catkin_LIBRARIES} )
+
+add_dependencies( simple_simulation ${PROJECT_NAME}_generate_messages )
+install(TARGETS simple_simulation RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION} )
+
+
+# Physics-based simulation of simple model
+add_executable( dirt_simple_simulation
+dirt_simple_model.cpp )
+target_link_libraries( dirt_simple_simulation
+  dirt_simple_model
+  util
+  ${catkin_LIBRARIES} )
+
+add_dependencies( simple_simulation ${PROJECT_NAME}_generate_messages )
+install(TARGETS simple_simulation RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION} )
+
 # Publish single control pulse
 add_executable( pulse_test
   pulse_test.cpp )
