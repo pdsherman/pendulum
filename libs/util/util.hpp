@@ -26,7 +26,12 @@ double interpolate(const std::vector<double> &x, const std::vector<double> &y, c
 /// @note Assumes all data is of type double.
 /// @param [in] csv_file Data file in csv format
 /// @return Map with key as column header and data as value
-std::map<std::string, std::vector<double>> get_data_from_csv(const std::string& csv_file);
+std::map<std::string, std::vector<double>> read_data_from_csv(const std::string& csv_file);
+
+/// Write data to a file in CSV format
+/// @param [in] csv_file File to write
+/// @param [in] data Map of data. Key will used as header column names
+void write_data_to_csv(const std::string &csv_file, std::map<std::string, std::vector<double>> data);
 
 /// Convenience function to add two arrays.
 /// @param [in] a First array

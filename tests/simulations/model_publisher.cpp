@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
     plant->set_friction(0.004);
   }
 
-  ros::Duration(0.5).sleep();
+  ros::Duration(0.3).sleep();
   pendulum.initialize_test(ros::Time::now());
 
   // ************************** //

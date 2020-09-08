@@ -25,7 +25,7 @@ double interpolate(const std::vector<double> &x, const std::vector<double> &y, c
   return 0.0;
 }
 
-std::map<std::string, std::vector<double>> get_data_from_csv(const std::string& csv_file)
+std::map<std::string, std::vector<double>> read_data_from_csv(const std::string& csv_file)
 {
   std::ifstream ifs;
   ifs.open(csv_file, std::ifstream::in);
@@ -62,6 +62,44 @@ std::map<std::string, std::vector<double>> get_data_from_csv(const std::string& 
     data[columns[i]] = raw_data[i];
   }
   return data;
+}
+
+void write_data_to_csv(const std::string &csv_file, std::map<std::string, std::vector<double>> data)
+{
+  std::ofstream ofs;
+  ofs.open(csv_file, std::ios::out | std::ios::trunc);
+
+  // Parse column names and write first line (header)
+  std::vector<std::string> headers;
+  for(auto const &x : data) {
+    headers.push_back(x.first);
+    ofs << x.first;
+    if(x.first == data.rbegin()->first) {
+      ofs << "\n";
+    } else {
+      ofs << ",";
+    }
+  }
+
+  // Use smallest vector of data if they aren't the same size.
+  size_t n = (*std::min_element(data.begin(), data.end(), [](
+    const std::pair<std::string, std::vector<double>> &i,
+    const std::pair<std::string, std::vector<double>> &j)
+    { return i.second.size() < j.second.size(); })).second.size();
+
+  // Write data to file
+  for(size_t i = 0; i < n ; ++i) {
+    for(const auto &name : headers) {
+      ofs << data[name][i];
+      if(name == (*headers.rbegin())) {
+        ofs << "\n";
+      } else {
+        ofs << ",";
+      }
+    }
+  }
+
+  ofs.close();
 }
 
 } // namespace util

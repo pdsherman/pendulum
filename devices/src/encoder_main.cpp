@@ -9,7 +9,7 @@
 
 #include <pendulum/State.h>
 #include <pendulum/AddPendulum.h>
-#include <pendulum/StartLogging.h>
+#include <pendulum/LoggingStart.h>
 
 #include <devices/Encoder.hpp>
 
@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 
   // Attempt to Add pendulum to gui. Exit if service server doesn't start up in time.
   ros::ServiceClient gui_client = nh.serviceClient<pendulum::AddPendulum>("/gui/add_pendulum");
-  ros::ServiceClient logging_client = nh.serviceClient<pendulum::StartLogging>("/sqlite/start_log");
+  ros::ServiceClient logging_client = nh.serviceClient<pendulum::LoggingStart>("/sqlite/start_log");
 
   int count = 0;
   while((!gui_client.exists() ||!logging_client.exists()) && count < 10) {
@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
   gui_client.call(gui_srv);
 
   // TODO: Remove and place in better position eventually
-  pendulum::StartLogging log_srv;
+  pendulum::LoggingStart log_srv;
   log_srv.request.topic_name = gui_srv.request.name;
   log_srv.request.table_name = "TestTable";
   log_srv.request.start_time = ros::Time::now();
