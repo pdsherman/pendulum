@@ -25,7 +25,7 @@ class PendulumImage:
         self.width  = 15.0
 
         # State variable x is in meters
-        # Sacling converts x to pixels (1 m = 500 pixels)
+        # Scaling converts x to pixels (1 m = 500 pixels)
         self.scaling = 500.0
 
         # Iitialize State

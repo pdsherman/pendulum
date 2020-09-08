@@ -16,7 +16,8 @@ public:
   /// Constructor
   /// @param [in] i2c_dev Name for i2c peripheral to use
   /// @param [in] addr Address for device reading the encoder
-  Encoder(const std::string &i2c_dev, const uint8_t addr);
+  /// @param [in] cnt_per_rev Number of encoder counts per revolution
+  Encoder(const std::string &i2c_dev, const uint8_t addr, const double cnt_per_rev = 1600.0);
 
   /// Destructor
   ~Encoder(void);
@@ -68,8 +69,10 @@ private:
   /// Offset to subtract (in radians) from position when calling position method
   double _offset_radians;
 
-  /// Converting encoder counts to radians
-  static constexpr double cpr = 1600.0;
+  /// Scaling encoder counts to radians
+  const double _cnt_to_rad;
+
+  /// Constant PI
   static constexpr double pi  = 3.14159;
-  static constexpr double cnt_to_rad = 2*pi/cpr;
+
 };

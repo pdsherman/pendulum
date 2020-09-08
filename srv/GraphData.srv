@@ -1,0 +1,9 @@
+string table_name
+string x_axis_data
+string y_axis_data
+bool overlay
+bool use_time_bound
+float64 lower_time_bound
+float64 upper_time_bound
+---
+bool success

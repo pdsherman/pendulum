@@ -8,12 +8,13 @@
 #include <linux/i2c.h>
 #include <linux/i2c-dev.h>
 
-Encoder::Encoder(const std::string &i2c_dev, const uint8_t addr) :
+Encoder::Encoder(const std::string &i2c_dev, const uint8_t addr, const double cnt_per_rev) :
   _is_open(false),
   _dev_name(i2c_dev),
   _slave_addr(addr),
   _file_des(-1),
-  _offset_radians(0.0)
+  _offset_radians(0.0),
+  _cnt_to_rad(2*pi/cnt_per_rev)
 {
 }
 
@@ -41,7 +42,7 @@ bool Encoder::close_port(void)
 
 double Encoder::position(void)
 {
-  return static_cast<double>(raw_count())*cnt_to_rad + _offset_radians;
+  return static_cast<double>(raw_count())*_cnt_to_rad + _offset_radians;
 }
 
 void Encoder::set_offset(const double offset_rad)
