@@ -12,6 +12,7 @@ try:
 
     while not rospy.is_shutdown() and not gui.exit_requested():
         gui.update()
+        time.sleep(0.01)
 
 except rospy.ROSInterruptException:
     pass

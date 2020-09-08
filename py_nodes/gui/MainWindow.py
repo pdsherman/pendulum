@@ -36,9 +36,9 @@ class MainWindow:
         self.img = ImageCanvas(self.root) # Display of pendulum
         self.quit = False # Flag for killing GUI
 
-        # ROS service server: Because AddPendulum will be serviced in a
+        # ROS service server: Because ROS services are handled in a
         # separate thread and Tkinter library functions can only be called
-        # from main thread. Use a queue to hold info from service and then
+        # from main thread, use a queue to hold info from service and then
         # call the actual gui methods in update.
         self.lock = threading.Lock()
         self.service_queue = []

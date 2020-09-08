@@ -37,7 +37,10 @@ add_service_files( DIRECTORY ${PROJECT_SOURCE_DIR}/srv
   FILES
   AddPendulum.srv
   RemovePendulum.srv
-  StartLogging.srv
+  LoggingStart.srv
+  LoggingDropTable.srv
+  LoggingBufferEmpty.srv
+  GraphData.srv
 )
 
 generate_messages( DEPENDENCIES std_msgs )
@@ -71,7 +74,7 @@ if (SQLITE3_FOUND)
 endif (SQLITE3_FOUND)
 
 add_subdirectory( tests )
-#add_subdirectory( control )
+# add_subdirectory( control )
 add_subdirectory( devices )
 add_subdirectory( plant )
 add_subdirectory( libs )

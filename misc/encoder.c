@@ -72,7 +72,7 @@ void configure_device(void)
     SSPCONbits.SSPEN = 1;      // Enable Serial Port
     SSPCONbits.CKP   = 1;      // Enable clock
 
-    // Setup I2C Address
+    // Set I2C Address
     SSPADD = 0x28 << 1;
 
     //----- Interrupts -----//

@@ -1,21 +1,33 @@
 
-#include <plant/Model.hpp>
+#include <plant/SimplePendulum.hpp>
 
 #include <libs/util/util.hpp>
 
 #include <cmath>
 
-
-std::shared_ptr<Plant<4>> Model::create(const State &x0)
+std::shared_ptr<Plant<4>> SimplePendulum::create(const State &x0)
 {
-  return static_cast<std::shared_ptr<Plant<4>>>(std::make_shared<Model>(x0));
+  return static_cast<std::shared_ptr<Plant<4>>>(std::make_shared<SimplePendulum>(x0));
 }
 
-Model::Model(const State &x0) : Plant<4>(x0)
+SimplePendulum::SimplePendulum(const State &x0) :
+  Plant<4>(x0),
+  _b(1.0),
+  _I(1.0)
 {
 }
 
-Model::State Model::update(const double u, const double dt)
+void SimplePendulum::set_moment_of_inertia(const double I)
+{
+  _I = I;
+}
+
+void SimplePendulum::set_friction(const double b)
+{
+  _b = b;
+}
+
+SimplePendulum::State SimplePendulum::update(const double u, const double dt)
 {
   /// Method will calculate the state of the system one
   /// time step in the future by using classical 4th order
@@ -56,35 +68,20 @@ Model::State Model::update(const double u, const double dt)
   return _x;
 }
 
-Model::State Model::calculate_x_dot(const State &x, const double u) const
+SimplePendulum::State SimplePendulum::calculate_x_dot(const State &x, const double u) const
 {
-  static constexpr double d = M + m;
-  static constexpr double k = m*l;
-  static constexpr double w = b_p/l;
-  static constexpr double z = (m*l) + (I/l);
-
-  const double c2 = cos(x[2]);
-  const double s2 = sin(x[2]);
-  const double s2_sqr = pow(s2, 2.0);
-
   State x_dot;
 
-  // x-dot
-  x_dot[0] = x[1];
+  // Ignoring linear motion
+  x_dot[0] = 0.0;
+  x_dot[1] = 0.0;
 
-  // x-double-dot
-  const double n1 = z / (d*z - m*k*s2_sqr);
-  const double n2 = (2.0*k + z) / z;
-  x_dot[1] = n1*(-b_b*x[1] + k*c2*pow(x[3], 2.0) - n2*w*s2*x[3] - m*k*g*sin(2*x[2])/(2*z) + u);
-
-  // theta-dot
+  // Theta-dot
   x_dot[2] = x[3];
 
-  // theta-double-dot
-  const double n3 = m / (d*z - m*k*s2_sqr);
-  const double n4 = 0.5*k*sin(2.0*x[2]);
-  const double n5 = (2.0*d + m*s2_sqr) / m;
-  x_dot[3] = n3*(-b_b*s2*x[1] + n4*pow(x[3], 2.0) - n5*w*x[3] - d*g*c2 + s2*u);
+  // Theta-double-dot
+  const double c = l/(m*l*l + _I);
+  x_dot[3] = c*((-2.0*_b/l)*x[3] - m*g*cos(x[2]));
 
   return x_dot;
 }

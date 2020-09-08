@@ -7,14 +7,16 @@
 #include <fstream>
 #include <deque>
 
+namespace util {
+
 double interpolate(const std::vector<double> &x, const std::vector<double> &y, const double x_n)
 {
   // If x_n is outside, return extreme
-  if(x_n < *x.cbegin())  { return *x.cbegin(); }
-  if(x_n > *x.crbegin()) { return *x.crbegin(); }
+  if(x_n <= *x.cbegin())  { return *y.cbegin(); }
+  if(x_n >= *x.crbegin()) { return *y.crbegin(); }
 
   for(size_t i = 0; i < x.size()-1; ++i) {
-    if(x_n > x[i] && x_n < x[i+1]) {
+    if(x_n >= x[i] && x_n < x[i+1]) {
       double m = (y[i+1] - y[i])/(x[i+1] - x[i]);
       return y[i] + m*(x_n - x[i]);
     }
@@ -61,3 +63,5 @@ std::map<std::string, std::vector<double>> get_data_from_csv(const std::string& 
   }
   return data;
 }
+
+} // namespace util
