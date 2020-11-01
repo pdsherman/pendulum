@@ -10,10 +10,11 @@ Description: ROS node to read data from table and plot
 
 from pendulum.srv import GraphData, GraphDataResponse
 
-import rospy
-import sqlite3
+import math
 import time
+import rospy
 import threading
+import sqlite3
 
 import matplotlib.pyplot as plt
 
@@ -41,11 +42,11 @@ def get_sensor_data():
     c = conn.cursor()
 
     command = "SELECT * FROM {}".format("TestTable")
-    command += " where test_time_s > {} and test_time_s < {}".format(
-            5.26, 25.0)
+    command += " where test_time_s > {} and test_time_s < {} and theta < 10.0".format(
+            5.26, 65.5)
     command += " ORDER BY timestamp"
-    c.execute(command)
 
+    c.execute(command)
     for row in c:
         data["t"].append(row['test_time_s'])
         data["x"].append(row['x'])
@@ -69,7 +70,7 @@ def get_data(req):
     if(req.use_time_bound):
         command += " where test_time_s >= {} and test_time_s <= {}".format(
                 req.lower_time_bound, req.upper_time_bound)
-    command += " ORDER BY timestamp"
+    command += " ORDER BY test_time_s"
     c.execute(command)
 
     for row in c:
@@ -91,6 +92,7 @@ def graph_request(req):
         sensor_data = get_sensor_data()
         plt.plot(sensor_data["t"], sensor_data["theta"],'r')
 
+    plt.subplots_adjust(left=0.04, right=0.97)
     plt.plot(data["t"], data["theta"], 'b')
     plt.show()
 

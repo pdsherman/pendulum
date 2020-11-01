@@ -16,8 +16,8 @@ PlantManager::PlantManager(
   _u(),
   _plant(nullptr),
   _dt(dt),
-  _state_pub(nh.advertise<pendulum::State>(name, 500)),
-  _control_pub(nh.advertise<pendulum::Control>("control", 500))
+  _state_pub(nh.advertise<pendulum::State>(name, 1000)),
+  _control_pub(nh.advertise<pendulum::Control>("control", 1000))
 {
   switch(plant_type) {
   case Type::Simple:

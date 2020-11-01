@@ -39,6 +39,12 @@ bool MsgHandler::buffer_empty(void)
   return _buffer.empty();
 }
 
+size_t MsgHandler::buffer_size(void)
+{
+  std::lock_guard<std::mutex> lck(_buffer_mtx);
+  return _buffer.size();
+}
+
 bool MsgHandler::logging_begin(void)
 {
   if(!_logging_active.load())
@@ -80,7 +86,9 @@ void MsgHandler::logging_thread_func(void)
     if(insert) {
       _table->insert_row(d.timestamp, d.test_time, d.x, d.theta);
       insert = false;
+      std::this_thread::sleep_for(std::chrono::microseconds(1));
+    } else {
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
 }

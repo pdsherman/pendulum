@@ -15,7 +15,7 @@
 #include <pendulum/GraphData.h>
 #include <pendulum/LoggingStart.h>
 #include <pendulum/LoggingDropTable.h>
-#include <pendulum/LoggingBufferEmpty.h>
+#include <pendulum/LoggingBufferCheck.h>
 
 #include <ros/ros.h>
 #include <ros/console.h>
@@ -23,6 +23,7 @@
 #include <atomic>
 #include <csignal>
 #include <memory>
+#include <random>
 
 
 /// Request GUI node to display the pendulum
@@ -50,11 +51,18 @@ int main(int argc, char *argv[])
   const double u0 = 0.0;
 
   pendulum::State x0;
-  x0.x           = 1.0;
+  x0.x           = 0.65;
   x0.x_dot       = 0.0;
-  x0.theta       = 0.5183;
+  x0.theta       = 1.40;
   x0.theta_dot   = 0.0;
   x0.test_time_s = 0.0;
+
+
+  pendulum::State x_target;
+  x_target.x           = 1.0;
+  x_target.x_dot       = 0.0;
+  x_target.theta       = 1.5707963267948966;
+  x_target.theta_dot   = 0.0;
 
   std::string name = "Simulated";
 
@@ -72,7 +80,7 @@ int main(int argc, char *argv[])
   const double dt = 0.01; // Time step
   ros::Rate rate(1/dt);
 
-  PlantManager::Type plant_type = PlantManager::Type::Simple;
+  PlantManager::Type plant_type = PlantManager::Type::Full;
   PlantManager pendulum(nh, name, x0, u0, dt, plant_type);
 
   if(plant_type ==  PlantManager::Type::Simple) {
@@ -84,14 +92,36 @@ int main(int argc, char *argv[])
   ros::Duration(0.3).sleep();
   pendulum.initialize_test(ros::Time::now());
 
+  std::array<double, 4> K = {-3.6824, -12.964, 197.627, 38.223};
+  std::default_random_engine generator;
+  std::normal_distribution<double> distribution(0.0, 5.0);
+
   // ************************** //
   // **      MAIN LOOP       ** //
   // ************************** //
   ROS_INFO("Beginning simulation.");
+  bool control_active = true;
+  auto start_time = ros::Time::now();
   while(ros::ok() && !sigint_raised)
   {
     // First get all updates
     ros::spinOnce();
+
+    // Calculate control. u = -K*x
+    pendulum::State x = pendulum.get_current_state();
+    if(control_active) {
+      double u = -1*((x.x-x_target.x)*K[0] + x.x_dot*K[1] + (x.theta-x_target.theta)*K[2] + x.theta_dot*K[3]);
+      u += distribution(generator);
+
+
+      if((ros::Time::now() - start_time).toSec() > 30.0) {
+        control_active = false;
+        u = 0;
+        ROS_INFO("Stopping Active Control");
+      }
+
+      pendulum.set_control(u);
+    }
 
     // Simulate system one time step forward.
     pendulum.cycle(ros::Time::now());
@@ -102,13 +132,13 @@ int main(int argc, char *argv[])
   ROS_INFO("Ending simulation.");
 
   // Waits for all data to be inserted into SQLite table
-  ros::ServiceClient client_logging_done = nh.serviceClient<pendulum::LoggingBufferEmpty>("/grapher/log_buffer_empty");
+  ros::ServiceClient client_logging_done = nh.serviceClient<pendulum::LoggingBufferCheck>("/sqlite/log_buffer_check");
   if(client_logging_done.exists()) {
     while(true) {
-      pendulum::LoggingBufferEmpty logging_done;
+      pendulum::LoggingBufferCheck logging_done;
       client_logging_done.call(logging_done);
       ros::Duration(0.2).sleep();
-      if(logging_done.response.is_empty) { break; }
+      if(logging_done.response.is_empty && logging_done.response.size == 0) { break; }
     }
   }
 
@@ -168,7 +198,6 @@ bool start_logging(ros::NodeHandle &nh, const std::string &name, const std::stri
     pendulum::LoggingStart start_log;
     start_log.request.table_name = log_table_name;
     start_log.request.topic_name = name;
-    start_log.request.start_time = ros::Time::now();
 
     return sql_client.call(start_log) && start_log.response.success;
   }

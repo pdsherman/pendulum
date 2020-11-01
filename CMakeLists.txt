@@ -39,7 +39,8 @@ add_service_files( DIRECTORY ${PROJECT_SOURCE_DIR}/srv
   RemovePendulum.srv
   LoggingStart.srv
   LoggingDropTable.srv
-  LoggingBufferEmpty.srv
+  LoggingBufferCheck.srv
+  LoggingStop.srv
   GraphData.srv
 )
 

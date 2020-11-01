@@ -4,6 +4,7 @@ add_executable( parameter_search
   find_parameters.cpp )
 target_link_libraries( parameter_search
   pendulum_model
+  util
   ${catkin_LIBRARIES} )
 
 add_dependencies( parameter_search ${PROJECT_NAME}_generate_messages )

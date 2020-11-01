@@ -43,12 +43,12 @@ private:
   //   Simulation Constants  //
   // *********************** //
 
-  static constexpr double M = 5.5;
-  static constexpr double m = 2.7;
-  static constexpr double l = 0.5;
-  static constexpr double I = 0.188;
-  static constexpr double b_b = 2.5;
-  static constexpr double b_p = 0.08;
+  static constexpr double l   = 0.5;
+  static constexpr double M   = 5.5;
+  static constexpr double m   = 2.7;
+  static constexpr double b_b = 0.5;
+  static constexpr double I   = 0.00474;
+  static constexpr double b_p = 0.00061;
 
   static constexpr double g = 9.80665;  //< Acceleration from gravity (m/s^2)
 

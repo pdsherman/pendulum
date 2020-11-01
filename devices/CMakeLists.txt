@@ -1,6 +1,6 @@
 
 add_library( encoder
-  src/Encoder.cpp )
+  src/EncoderBoard.cpp )
 
 add_executable( encoder_test
 src/encoder_main.cpp )

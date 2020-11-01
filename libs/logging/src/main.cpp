@@ -11,8 +11,9 @@
 
 #include <pendulum/State.h>
 #include <pendulum/LoggingStart.h>
+#include <pendulum/LoggingStop.h>
 #include <pendulum/LoggingDropTable.h>
-#include <pendulum/LoggingBufferEmpty.h>
+#include <pendulum/LoggingBufferCheck.h>
 
 #include <ros/ros.h>
 #include <boost/function.hpp>
@@ -27,9 +28,12 @@ static MsgHandler msg_handler;
 // Stops logging if active, then drops table from SQLite database
 bool drop_table(pendulum::LoggingDropTable::Request &req, pendulum::LoggingDropTable::Response &res);
 
-/// Function for LoggingBufferEmpty service.
+
+bool logging_stop_cb(pendulum::LoggingStop::Request &req, pendulum::LoggingStop::Response &res);
+
+/// Function for LoggingBufferCheck service.
 /// Checks if logging has any buffered data to insert into database.
-bool logging_buff_empty(pendulum::LoggingBufferEmpty::Request &req, pendulum::LoggingBufferEmpty::Response &res);
+bool logging_buff_check(pendulum::LoggingBufferCheck::Request &req, pendulum::LoggingBufferCheck::Response &res);
 
 /// Callback function for the ROS subscriber. Saves
 /// msg for logging into SQLite table
@@ -46,7 +50,7 @@ int main(int argc, char* argv[])
   // Creates a new SQLite table object and will subscribing to topic to insert into database
   // Lambda used to capture the ROS NodeHandle and Subscriber objects for use in function
   // Using boost since ros does not accept std::function. (as of Aug. 2020)
-  boost::function<bool(pendulum::LoggingStart::Request &, pendulum::LoggingStart::Response &)> start_logging_cb =
+  boost::function<bool(pendulum::LoggingStart::Request &, pendulum::LoggingStart::Response &)> logging_start_cb =
   [&nh, &subscriber](pendulum::LoggingStart::Request &req, pendulum::LoggingStart::Response &res)
   {
     if(!msg_handler.logging_is_active()) {
@@ -57,7 +61,7 @@ int main(int argc, char* argv[])
           // Subscribe to topic
           std::string topic = req.topic_name;
           topic.insert(0, "/");
-          subscriber = nh.subscribe(topic, 500, &msg_callback);
+          subscriber = nh.subscribe(topic, 2000, &msg_callback);
 
           res.success = true;
           ROS_INFO("SQLite logging started");
@@ -68,14 +72,15 @@ int main(int argc, char* argv[])
         ROS_WARN("Failed to open DB or create table");
       }
     } else {
-      ROS_WARN("Table already created");
+      ROS_WARN("Logging already active");
     }
 
     return true;
   };
 
-  ros::ServiceServer logging_stat_server = nh.advertiseService("start_log", start_logging_cb);
-  ros::ServiceServer logging_buffer_empty_server = nh.advertiseService("log_buffer_empty", logging_buff_empty);
+  ros::ServiceServer start_server = nh.advertiseService("start_log", logging_start_cb);
+  ros::ServiceServer stop_server = nh.advertiseService("stop_log", logging_stop_cb);
+  ros::ServiceServer buffer_check_server = nh.advertiseService("log_buffer_check", logging_buff_check);
   ros::ServiceServer remove_table_server = nh.advertiseService("drop_table", drop_table);
 
   ros::Rate rate(1/0.005);
@@ -103,7 +108,7 @@ bool drop_table(pendulum::LoggingDropTable::Request &req, pendulum::LoggingDropT
 {
   if(msg_handler.logging_is_active()) {
     msg_handler.logging_end();
-    while(msg_handler.logging_is_active()) { usleep(200000); }
+    while(msg_handler.logging_is_active()) { ros::Duration(0.2).sleep(); }
   }
 
   std::unique_ptr<SqliteTable> tbl = std::unique_ptr<SqliteTable>(new SqliteTable(req.table_name));
@@ -112,12 +117,22 @@ bool drop_table(pendulum::LoggingDropTable::Request &req, pendulum::LoggingDropT
   else
     res.success = false;
 
-
   return true;
 }
 
-bool logging_buff_empty(pendulum::LoggingBufferEmpty::Request &req, pendulum::LoggingBufferEmpty::Response &res)
+bool logging_stop_cb(pendulum::LoggingStop::Request &req, pendulum::LoggingStop::Response &res)
 {
+  if(msg_handler.logging_is_active()) {
+    msg_handler.logging_end();
+    while(msg_handler.logging_is_active()) { ros::Duration(0.2).sleep(); }
+  }
+  ROS_INFO("Logging Stopped");
+  return true;
+}
+
+bool logging_buff_check(pendulum::LoggingBufferCheck::Request &req, pendulum::LoggingBufferCheck::Response &res)
+{
+  res.size     = msg_handler.buffer_size();
   res.is_empty = msg_handler.buffer_empty();
   return true;
 }

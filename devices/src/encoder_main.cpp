@@ -54,7 +54,6 @@ int main(int argc, char *argv[])
   pendulum::LoggingStart log_srv;
   log_srv.request.topic_name = gui_srv.request.name;
   log_srv.request.table_name = "TestTable";
-  log_srv.request.start_time = ros::Time::now();
   logging_client.call(log_srv);
 
   // State publishing object

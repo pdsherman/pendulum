@@ -43,10 +43,12 @@ public:
   /// @param [in] data New datapoint to buffer
   void buffer_data(MsgData &&data);
 
-  /// Check if the data buffer has any remaining data point
-  /// to insert.
+  /// Check if the data buffer has any remaining data points to insert.
   /// @return True if buffer is empty.
   bool buffer_empty(void);
+
+  /// Get the current size of buffer
+  size_t buffer_size(void);
 
   /// Start-up a thread to begin removing data from
   /// buffer and inserting into the SQLite table
