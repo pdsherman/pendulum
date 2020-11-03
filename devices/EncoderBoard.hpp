@@ -9,6 +9,7 @@
 
 #include <stdint.h>
 #include <string>
+#include <array>
 
 /// Interface for an encoder reading device.
 class EncoderBoard {
@@ -19,7 +20,7 @@ public:
   enum class Mode : uint8_t {
     OnlyOne = 1,  ///< Board returns position of Encoder #1
     OnlyTwo = 2,  ///< Board returns position of Encoder #2
-    Both = 3      ///< Board returns position of both encoders.
+    Both    = 3   ///< Board returns position of both encoders.
   };
 
   /// Specifies encoder selection for some class methods.
@@ -44,29 +45,29 @@ public:
 
   /// Set the mode of the encoder board.
   ///
-  void set_mode(cosnt Mode mode) const;
-  
+  void set_mode(const Mode mode);
+
   /// Get the position of the encoder
   /// Will convert counts to radians and subtract offset if set by user
   /// @return Position in radians
-  double position(void);
+  double position_single(void);
   std::array<double, 2> position(void);
 
   /// Set an offset in softare for convenience
   /// when calling position method
   /// @param [in] encoder Which encoder offset to set
   /// @param [in] offset_rad Offset in radians
-  void set_offset(const Enocder encdr, const double offset_rad);
+  void set_offset(const Encoder encdr, const double offset_rad);
 
   /// Get the current position offset
   /// @param [in] encdr Which encoder offset to get
   /// @return Offset set by user
-  double get_offset(const Enocder encdr) const;
+  double get_offset(const Encoder encdr) const;
 
   /// Get raw count value from encoder
   /// @note Ignores offset
   /// @return Encoder position in counts
-  int32_t raw_count(void);
+  int32_t raw_count_single(void);
   std::array<int32_t, 2> raw_count(void);
 
   /// Set the current position of the encoder sensor to 0

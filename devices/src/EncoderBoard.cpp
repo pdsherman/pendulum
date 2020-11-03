@@ -44,7 +44,7 @@ bool EncoderBoard::is_connected(void) const
   return _is_open;
 }
 
-void set_mode(cosnt Mode mode) const
+void EncoderBoard::set_mode(const Mode mode)
 {
   _mode = mode;
   uint8_t data = static_cast<uint8_t>(mode);
@@ -63,30 +63,30 @@ std::array<double, 2> EncoderBoard::position(void)
   return pos;
 }
 
-double EncoderBoard::position(void)
+double EncoderBoard::position_single(void)
 {
   if(_mode == Mode::OnlyOne || _mode == Mode::Both)
-    return static_cast<double>(raw_count())*_cnt_to_rad_1 + _offset_radians_1;
+    return static_cast<double>(raw_count_single())*_cnt_to_rad_1 + _offset_radians_1;
   else
-    return static_cast<double>(raw_count())*_cnt_to_rad_2 + _offset_radians_2;
+    return static_cast<double>(raw_count_single())*_cnt_to_rad_2 + _offset_radians_2;
 }
 
-void EncoderBoard::set_offset(const Enocder encdr, const double offset_rad)
+void EncoderBoard::set_offset(const Encoder encdr, const double offset_rad)
 {
-  if(encder == Encoder::One)
+  if(encdr == Encoder::One)
     _offset_radians_1 = offset_rad;
   else
     _offset_radians_2 = offset_rad;
 }
 
-double EncoderBoard::get_offset(const Enocder encdr) const
+double EncoderBoard::get_offset(const Encoder encdr) const
 {
-  if(encder == Encoder::One)
+  if(encdr == Encoder::One)
     return _offset_radians_1;
   return _offset_radians_2;
 }
 
-int32_t EncoderBoard::raw_count(void)
+int32_t EncoderBoard::raw_count_single(void)
 {
   int32_t pos = 0;
   if(_is_open) {
@@ -99,10 +99,9 @@ int32_t EncoderBoard::raw_count(void)
   return pos;
 }
 
-std::array<int32_t, 2> raw_count(void)
+std::array<int32_t, 2> EncoderBoard::raw_count(void)
 {
   std::array<int32_t, 2> raw = {0, 0};
-
   if(_is_open) {
     int num = ::read(_file_des, raw.data(), 8);
     if(num != 8) {

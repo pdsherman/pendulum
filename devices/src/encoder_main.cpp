@@ -11,7 +11,7 @@
 #include <pendulum/AddPendulum.h>
 #include <pendulum/LoggingStart.h>
 
-#include <devices/Encoder.hpp>
+#include <devices/EncoderBoard.hpp>
 
 #include <ros/ros.h>
 
@@ -60,21 +60,24 @@ int main(int argc, char *argv[])
   ros::Publisher pub = nh.advertise<pendulum::State>(gui_srv.request.name, 10);
 
   // Connect to encoder hardware
-  Encoder encdr("/dev/i2c-1", 0x28);
+  EncoderBoard encdr("/dev/i2c-1", 0x28);
   if(!encdr.connect()) {
     ROS_WARN("Couldn't connect to encoder.");
     return 0;
   }
+
+  encdr.set_mode(EncoderBoard::Mode::Both);
   encdr.zero_position();
-  encdr.set_offset(-PI/2.0);
+  encdr.set_offset(EncoderBoard::Encoder::One, -PI/2.0);
 
   const double dt = 0.02; // Time step
   ros::Rate rate(1/dt);
 
   while(ros::ok()) {
     // update state variable
-    state.x = 1.0;
-    state.theta = encdr.position();
+    std::array<double, 2> pos = encdr.position();
+    state.x = pos[1];
+    state.theta = pos[0];
     state.header.stamp = ros::Time::now();
 
     // publish and delay
