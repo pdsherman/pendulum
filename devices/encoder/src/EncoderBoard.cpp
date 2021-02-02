@@ -1,5 +1,5 @@
 
-#include <devices/EncoderBoard.hpp>
+#include <devices/encoder/EncoderBoard.hpp>
 
 #include <iostream>
 #include <fcntl.h>

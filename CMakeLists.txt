@@ -66,6 +66,7 @@ include_directories(
   ${PROJECT_SOURCE_DIR}
   ${catkin_INCLUDE_DIRS}
 )
+include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/external-libs/libserial/src")
 
 # Find SQLite3
 find_package (SQLite3)
@@ -79,3 +80,4 @@ add_subdirectory( tests )
 add_subdirectory( devices )
 add_subdirectory( plant )
 add_subdirectory( libs )
+add_subdirectory( external_libs )
