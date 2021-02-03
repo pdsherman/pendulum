@@ -7,10 +7,14 @@
 
 #pragma once
 
+#include <termios.h>
+
 #include <vector>
+#include <iomanip>
 #include <map>
 #include <string>
 #include <array>
+#include <sstream>
 
 namespace util {
 
@@ -33,6 +37,10 @@ std::map<std::string, std::vector<double>> read_data_from_csv(const std::string&
 /// @param [in] data Map of data. Key will used as header column names
 void write_data_to_csv(const std::string &csv_file, std::map<std::string, std::vector<double>> data);
 
+/// Converts POSIX speed_t to a baud rate, as an integer.  The values of the
+/// constants for speed_t are not themselves portable.
+int speed_to_baud(speed_t speed);
+
 /// Convenience function to add two arrays.
 /// @param [in] a First array
 /// @param [in] b Second array
@@ -44,6 +52,24 @@ std::array<T, N> add_arrays(const std::array<T, N> &a, const std::array<T, N> &b
   for(size_t ii = 0; ii < N; ++ii)
     c[ii] = a[ii] + b[ii];
   return c;
+}
+
+/// Cast an enum to its underlying type.
+/// @param [in] e The enumerated value to cast.
+/// @return e, cast to its underlying type.
+template <typename E> constexpr auto to_underlying(E e) -> typename std::underlying_type<E>::type
+{
+	return static_cast<typename std::underlying_type<E>::type>(e);
+}
+
+/// Translate a byte to a formatted hexidecimal string 0x__.
+/// @param [in] byte The byte to translate.
+/// @return formatted hexidecimal string.
+template <typename T> std::string int_to_hex(T i)
+{
+	std::stringstream stream;
+	stream << "0x" << std::setfill('0') << std::setw(sizeof(T) * 2) << std::uppercase << std::hex << +i;
+	return stream.str();
 }
 
 } // namespace util

@@ -8,6 +8,7 @@ add_compile_options(
   $<$<COMPILE_LANGUAGE:CXX>:-std=c++0x>
   $<$<COMPILE_LANGUAGE:CXX>:-lsqlite3>
   -Wall
+  -fPIC
 )
 
 find_package(catkin REQUIRED COMPONENTS
@@ -74,6 +75,20 @@ if (SQLITE3_FOUND)
   message("FOUND SQLITE")
   #include_directories(${SQLITE3_INCLUDE_DIRS})
 endif (SQLITE3_FOUND)
+
+
+
+# prefer static linking to shared objects
+set(BUILD_SHARED_LIBS OFF)
+set(CMAKE_FIND_LIBRARY_SUFFIXES .a .so)
+
+#set(BOOST_LIBRARYDIR "/usr/lib/arm-linux-gnueabihf/")
+set(Boost_USE_STATIC_LIBS ON)
+find_package(
+    Boost 1.54 REQUIRED
+    COMPONENTS atomic
+               chrono
+               system)
 
 add_subdirectory( tests )
 # add_subdirectory( control )

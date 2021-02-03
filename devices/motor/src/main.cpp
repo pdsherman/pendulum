@@ -2,40 +2,27 @@
 
 
 #include <libserial/SerialPort.h>
+#include <external_libs/copley/CopleyCommandBuilderAscii.hpp>
+#include <external_libs/copley/CopleyBus.hpp>
+#include <external_libs/copley/CopleyParameter.hpp>
 
 #include <string>
 #include <iostream>
 
+using namespace LibSerial;
+
 int main(int argc, char* argv[])
 {
 
-  std::string port_addr = "/dev/serial0";
-
-  SerialPort port();
-
-  port.Open(port_addr);
-
-  if(!port.IsOpen()) {
-    std::cout << "Error: Unable to Open" << std::endl;
-    return -1;
+  std::string serial_port_addr = "/dev/serial0";
+  CopleyBus bus;
+  if(bus.connect(serial_port_addr)) {
+    CopleyCommandBuilderAscii cmd_builder(0);
+    CopleyCommand cmd = cmd_builder.build_get_command(CopleyParameter::kMotorModel,
+      CopleyParameter::kMotorModel.location);
+    bus.write_command(cmd);
   }
 
-  port.SetBaudRate(BaudRate::BAUD_9600);
-  port.SetCharacterSize(CharacterSize::CHAR_SIZE_8);
-  port.SetFlowControl(FlowControl::FLOW_CONTROL_NONE);
-  port.SetParity(Parity::PARITY_NONE);
-  port.SetStopBits(StopBits::STOP_BITS_1);
-
-
-  std::string msg = "g f0x41";
-  msg += '\r';
-
-  port.Write(msg);
-
-  std::string rx_msg = "";
-  port.ReadLine(rx_msg, '\r', 25);
-
-  std::cout << "Received: " << rx_msg << std::endl;
 
   return 0;
 }
