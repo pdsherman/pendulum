@@ -3,6 +3,7 @@
 
 #include <libserial/SerialPort.h>
 #include <external_libs/copley/CopleyCommandBuilderAscii.hpp>
+#include <external_libs/copley/CopleyCommandBuilderBinary.hpp>
 #include <external_libs/copley/CopleyBus.hpp>
 #include <external_libs/copley/CopleyParameter.hpp>
 
@@ -17,7 +18,7 @@ int main(int argc, char* argv[])
   std::string serial_port_addr = "/dev/serial0";
   CopleyBus bus;
   if(bus.connect(serial_port_addr)) {
-    CopleyCommandBuilderAscii cmd_builder(0);
+    CopleyCommandBuilderBinary cmd_builder(0);
     CopleyCommand cmd = cmd_builder.build_get_command(CopleyParameter::kMotorModel,
       CopleyParameter::kMotorModel.location);
     bus.write_command(cmd);
