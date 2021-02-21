@@ -84,8 +84,7 @@ int main(int argc, char* argv[])
   ros::ServiceServer remove_table_server = nh.advertiseService("drop_table", drop_table);
 
   ros::Rate rate(1/0.005);
-  while(ros::ok())
-  {
+  while(ros::ok()) {
     ros::spinOnce();
     rate.sleep();
   }

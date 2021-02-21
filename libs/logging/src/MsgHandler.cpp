@@ -71,12 +71,10 @@ void MsgHandler::logging_thread_func(void)
   _logging_active = true;
   bool insert = false;
   MsgData d;
-  while(_logging_active.load())
-  {
+  while(_logging_active.load()) {
     {
       std::lock_guard<std::mutex> lck(_buffer_mtx);
-      if(!_buffer.empty())
-      {
+      if(!_buffer.empty()) {
         d = _buffer.front();
         _buffer.pop();
         insert = true;

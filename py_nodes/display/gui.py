@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
 import rospy
-import math
-import time
-
 from MainWindow import MainWindow
+
+# ----------------------------- #
+# --      START OF SCRIPT    -- #
+# ----------------------------- #
 
 try:
     rospy.init_node("gui", anonymous=False)

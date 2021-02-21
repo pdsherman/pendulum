@@ -1,5 +1,5 @@
 
-#include <libs/util/FunctionTimer.hpp>
+#include <libs/function_timer/FunctionTimer.hpp>
 
 #include <numeric> // accumulate
 

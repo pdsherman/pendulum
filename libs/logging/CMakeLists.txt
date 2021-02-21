@@ -2,7 +2,7 @@
 add_library( sql_table
   src/SqliteTable.cpp )
 target_link_libraries( sql_table
-  util
+  func_timer
   ${SQLITE3_LIBRARIES} )
 add_dependencies( sql_table ${PROJECT_NAME}_generate_messages )
 

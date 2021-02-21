@@ -32,6 +32,7 @@ add_message_files( DIRECTORY ${PROJECT_SOURCE_DIR}/msg
    FILES
    State.msg
    Control.msg
+   Current.msg
 )
 
 add_service_files( DIRECTORY ${PROJECT_SOURCE_DIR}/srv
@@ -43,6 +44,7 @@ add_service_files( DIRECTORY ${PROJECT_SOURCE_DIR}/srv
   LoggingBufferCheck.srv
   LoggingStop.srv
   GraphData.srv
+  MotorControl.srv
 )
 
 generate_messages( DEPENDENCIES std_msgs )
@@ -58,15 +60,8 @@ catkin_package(
   CATKIN_DEPENDS roscpp std_msgs message_runtime
 )
 
-install( DIRECTORY gui/
-    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-    USE_SOURCE_PERMISSIONS )
-
 ## Specify additional locations of header files
-include_directories(
-  ${PROJECT_SOURCE_DIR}
-  ${catkin_INCLUDE_DIRS}
-)
+include_directories(${PROJECT_SOURCE_DIR} ${catkin_INCLUDE_DIRS})
 include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/external-libs/libserial/src")
 
 # Find SQLite3
@@ -75,7 +70,6 @@ if (SQLITE3_FOUND)
   message("FOUND SQLITE")
   #include_directories(${SQLITE3_INCLUDE_DIRS})
 endif (SQLITE3_FOUND)
-
 
 
 # prefer static linking to shared objects

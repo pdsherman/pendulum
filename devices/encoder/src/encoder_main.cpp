@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
     std::array<double, 2> pos = encdr.position();
     state.x = 1.0 + 0.02*PI*pos[1];
     state.theta = pos[0];
-	state.header.seq += 1;
+	  state.header.seq += 1;
     state.header.stamp = ros::Time::now();
 
     // publish and delay
