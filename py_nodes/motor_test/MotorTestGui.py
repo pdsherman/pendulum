@@ -40,8 +40,8 @@ class MotorTestGui:
         self.init_text_boxes()
 
         # Slider bar to adjust current
-        self.sldr = tk.Scale(self.root, from_=-5.0, to=5.0, resolution=0.05,
-            tickinterval=2.5, showvalue=0, length=300, orient=tk.HORIZONTAL,
+        self.sldr = tk.Scale(self.root, from_=-1.0, to=1.0, resolution=0.001,
+            tickinterval=0.5, showvalue=0, length=300, orient=tk.HORIZONTAL,
             command=self.slider_change)
         self.sldr.pack(side=tk.BOTTOM, pady=[5, 30])
 

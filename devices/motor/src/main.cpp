@@ -54,7 +54,6 @@ bool mtr_state(pendulum::MotorControl::Request &req, pendulum::MotorControl::Res
   if(req.active) {
     mtr->enable();
   } else {
-    std::cout << "Disable" << std::endl;
     mtr->disable();
   }
 
