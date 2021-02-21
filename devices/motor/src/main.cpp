@@ -22,6 +22,7 @@ int main(int argc, char* argv[])
   ros::NodeHandle nh;
 
   std::shared_ptr<Motor> mtr = std::make_shared<Motor>();
+  mtr->configure();
 
   boost::function<bool(pendulum::MotorControl::Request &, pendulum::MotorControl::Response &)>
   srv_cb = boost::bind(mtr_state, _1, _2, mtr);
@@ -38,7 +39,7 @@ int main(int argc, char* argv[])
   while(ros::ok()) {
     current.header.stamp = ros::Time::now();
     current.header.seq += 1;
-    current.current_A = (current.header.seq % 50)/10.0; //mtr->read_current();
+    current.current_A = mtr->read_current();
     pubber.publish(current);
 
     ros::spinOnce();
@@ -51,11 +52,10 @@ int main(int argc, char* argv[])
 bool mtr_state(pendulum::MotorControl::Request &req, pendulum::MotorControl::Response &res, std::shared_ptr<Motor> mtr)
 {
   if(req.active) {
-    std::cout << "Enable" << std::endl;
-    // mtr->enable();
+    mtr->enable();
   } else {
     std::cout << "Disable" << std::endl;
-    // mtr->disable();
+    mtr->disable();
   }
 
   res.success = true;
@@ -65,6 +65,5 @@ bool mtr_state(pendulum::MotorControl::Request &req, pendulum::MotorControl::Res
 
 void mtr_control(const pendulum::Current::ConstPtr &msg, std::shared_ptr<Motor> mtr)
 {
-  std::cout << "Commanded Current: " << std::to_string(msg->current_A) << std::endl;
-  //mtr->commanded_current(msg->current_A);
+  mtr->commanded_current(msg->current_A);
 }
