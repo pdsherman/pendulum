@@ -1,5 +1,6 @@
 
 #include <libs/util/util.hpp>
+#include <libs/function_timer/FunctionTimer.hpp>
 
 #include <array>
 #include <cmath>
@@ -7,7 +8,7 @@
 #include <map>
 #include <vector>
 
-int main(int argc, char *argv[])
+void test1(void)
 {
   std::map<std::string, std::vector<double>> data;
 
@@ -17,6 +18,9 @@ int main(int argc, char *argv[])
 
   const std::string file = "/home/pdsherman/projects/pendulum/catkin_ws/src/pendulum/data/write_test.csv";
   util::write_data_to_csv(file, data);
+}
 
+int main(int argc, char *argv[])
+{
   return 0;
 }

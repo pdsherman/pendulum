@@ -2,6 +2,8 @@
 #include <pendulum/Current.h>
 #include <pendulum/MotorControl.h>
 
+
+#include <devices/motor/RosMotor.hpp>
 #include <external_libs/motor/Motor.hpp>
 
 #include <ros/ros.h>
@@ -9,8 +11,6 @@
 
 #include <string>
 #include <iostream>
-//#include <functional>
-
 
 bool mtr_state(pendulum::MotorControl::Request &req, pendulum::MotorControl::Response &res, std::shared_ptr<Motor> mtr);
 
