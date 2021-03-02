@@ -24,13 +24,15 @@ bool RosMotor::setup(void)
 {
   std::lock_guard<std::mutex> lock(_mtx_mtr);
   _mtr.configure();
-  return true;
+  return _mtr.status_ok();
 }
 
 bool RosMotor::enable_drive_mode(void)
 {
-  if(_mtr_enabled)
+  if(_mtr_enabled) {
+    ROS_WARN("Motor already enabled.");
     return false;
+  }
 
   {
     std::lock_guard<std::mutex> lock(_mtx_mtr);
@@ -41,6 +43,7 @@ bool RosMotor::enable_drive_mode(void)
   _mtr_cmd_thread  = std::thread(&RosMotor::motor_writing_thread, this);
   _mtr_read_thread = std::thread(&RosMotor::motor_reading_thread, this);
 
+  ROS_INFO("Motor Drive Motor Enabled.");
   _mtr_enabled = true;
   return true;
 }
@@ -58,6 +61,7 @@ void RosMotor::disable_drive_mode(void)
     _mtr.disable();
   }
 
+  ROS_INFO("Motor Drive Motor Disabled.");
   _mtr_enabled = false;
 }
 

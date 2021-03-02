@@ -8,6 +8,11 @@ int main(int argc, char *argv[])
   ros::NodeHandle nh;
   RosMotor mtr(nh, "benchtop");
 
-  mtr.setup();
-  ros::spin();
+  ROS_INFO("Starting ROS motor node....");
+  if(mtr.setup()) {
+    ROS_INFO("Motor amp configured.");
+    ros::spin();
+  } else {
+      ROS_WARN("Failed to configure motor amp.");
+  }
 }
