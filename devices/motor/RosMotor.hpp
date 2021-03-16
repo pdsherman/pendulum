@@ -9,7 +9,8 @@
 #pragma once
 
 #include <pendulum/Current.h>
-#include <pendulum/MotorControl.h>
+#include <pendulum/MotorDriveMode.h>
+#include <pendulum/MotorControlGains.h>
 
 #include <external_libs/motor/Motor.hpp>
 #include <ros/ros.h>
@@ -59,7 +60,9 @@ public:
 
 private:
 
-  bool set_drive_mode(pendulum::MotorControl::Request &req, pendulum::MotorControl::Response &res);
+  bool set_drive_mode(pendulum::MotorDriveMode::Request &req, pendulum::MotorDriveMode::Response &res);
+
+  bool set_motor_gains(pendulum::MotorControlGains::Request &req, pendulum::MotorControlGains::Response &res);
 
   void cmd_current_cb(const pendulum::Current::ConstPtr &msg);
 
@@ -82,6 +85,9 @@ private:
 
   /// Server for motor drive mode service
   ros::ServiceServer _drive_mode_server;
+
+  /// Server for control gains service
+  ros::ServiceServer _gains_server;
 
   /// Subscriber for commanded current values
   ros::Subscriber _sub_commanded_current;

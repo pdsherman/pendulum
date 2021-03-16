@@ -9,8 +9,9 @@
 RosMotor::RosMotor(const ros::NodeHandle &nh, const std::string &name)
  :  _mtr(), _mtr_enabled(false), _nh(nh, name), _mtx_mtr(), _target_current(0.0), _quit(false)
 {
-  // Startup ROS service server,publisher and subscriber
+  // Startup ROS service servers, publisher and subscriber
   _drive_mode_server       = _nh.advertiseService("drive_mode", &RosMotor::set_drive_mode, this);
+  _gains_server            = _nh.advertiseService("control_gains", &RosMotor::set_motor_gains, this);
   _pub_measured_current    = _nh.advertise<pendulum::Current>("current_measured", 50);
   _sub_commanded_current   = _nh.subscribe("current_cmd", 10, &RosMotor::cmd_current_cb, this);
 }
@@ -82,7 +83,7 @@ bool RosMotor::motor_has_error(void)
   return false;
 }
 
-bool RosMotor::set_drive_mode(pendulum::MotorControl::Request &req, pendulum::MotorControl::Response &res)
+bool RosMotor::set_drive_mode(pendulum::MotorDriveMode::Request &req, pendulum::MotorDriveMode::Response &res)
 {
   if(req.active) {
     enable_drive_mode();
@@ -92,6 +93,16 @@ bool RosMotor::set_drive_mode(pendulum::MotorControl::Request &req, pendulum::Mo
     res.success = !_mtr_enabled;
   }
 
+  return true;
+}
+
+bool RosMotor::set_motor_gains(pendulum::MotorControlGains::Request &req, pendulum::MotorControlGains::Response &res)
+{
+  ROS_INFO("Writing new control gains");
+  std::lock_guard<std::mutex> lock(_mtx_mtr);
+  _mtr.control_gains_write(req.Cp, req.Ci);
+  auto gains = _mtr.control_gains_read();
+  res.success = (gains.first == req.Cp) && (gains.second == req.Ci);
   return true;
 }
 
@@ -130,6 +141,6 @@ void RosMotor::motor_reading_thread(void)
     msg.header.stamp = ros::Time::now();
     msg.header.seq  += 1;
     _pub_measured_current.publish(msg);
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
 }

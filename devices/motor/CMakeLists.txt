@@ -5,14 +5,7 @@ target_link_libraries(ros_motor
   ext_motor
   ${catkin_LIBRARIES})
 
-# Executable #1
-add_executable(motor_test src/main.cpp)
-target_link_libraries(motor_test ros_motor)
-
-add_dependencies( motor_test ${PROJECT_NAME}_generate_messages )
-install(TARGETS motor_test RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION} )
-
-# Executable #1
+# Executable
 add_executable(ros_motor_node src/motor_node.cpp)
 target_link_libraries(ros_motor_node ros_motor)
 

@@ -46,7 +46,8 @@ add_service_files( DIRECTORY ${PROJECT_SOURCE_DIR}/srv
   LoggingBufferCheck.srv
   LoggingStop.srv
   GraphData.srv
-  MotorControl.srv
+  MotorDriveMode.srv
+  MotorControlGains.srv
 )
 
 generate_messages( DEPENDENCIES std_msgs )
