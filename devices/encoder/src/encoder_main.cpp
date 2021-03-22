@@ -8,7 +8,7 @@
  */
 
 #include <pendulum/State.h>
-#include <pendulum/AddPendulum.h>
+#include <pendulum/DrawSystem.h>
 #include <pendulum/LoggingStart.h>
 
 #include <devices/encoder/EncoderBoard.hpp>
@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
   ros::NodeHandle nh;
 
   // Attempt to Add pendulum to gui. Exit if service server doesn't start up in time.
-  ros::ServiceClient gui_client = nh.serviceClient<pendulum::AddPendulum>("/gui/add_pendulum");
+  ros::ServiceClient gui_client = nh.serviceClient<pendulum::DrawSystem>("/gui/add_pendulum");
   //ros::ServiceClient logging_client = nh.serviceClient<pendulum::LoggingStart>("/sqlite/start_log");
 
   int count = 0;
@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
   }
 
   if(count >= 10) {
-    ROS_WARN("Timeout waiting for AddPendulum service to exist. Kill Simulation node.");
+    ROS_WARN("Timeout waiting for DrawSystem service to exist. Kill Simulation node.");
     return 0;
   }
 
@@ -42,12 +42,13 @@ int main(int argc, char *argv[])
   state.theta = 0.785;
 
   // Add pendulum to the GUI
-  pendulum::AddPendulum gui_srv;
+  pendulum::DrawSystem gui_srv;
   gui_srv.request.name  = "Encoder";
   gui_srv.request.x     = state.x;
   gui_srv.request.theta = state.theta;
   gui_srv.request.base_color = "blue";
   gui_srv.request.pendulum_color = "#FC33FF";
+  gui_srv.request.img_type = pendulum::DrawSystemRequest::PENDULUM;
   gui_client.call(gui_srv);
 
   // TODO: Remove and place in better position eventually

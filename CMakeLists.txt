@@ -39,8 +39,8 @@ add_message_files( DIRECTORY ${PROJECT_SOURCE_DIR}/msg
 
 add_service_files( DIRECTORY ${PROJECT_SOURCE_DIR}/srv
   FILES
-  AddPendulum.srv
-  RemovePendulum.srv
+  DrawSystem.srv
+  DeleteSystem.srv
   LoggingStart.srv
   LoggingDropTable.srv
   LoggingBufferCheck.srv

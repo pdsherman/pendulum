@@ -10,7 +10,7 @@
 #include <plant/SimplePendulum.hpp>
 
 #include <pendulum/State.h>
-#include <pendulum/AddPendulum.h>
+#include <pendulum/DrawSystem.h>
 #include <pendulum/RemovePendulum.h>
 #include <pendulum/GraphData.h>
 #include <pendulum/LoggingStart.h>
@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
 
 bool display(ros::NodeHandle &nh, const std::string &name, const pendulum::State &x0)
 {
-  ros::ServiceClient client = nh.serviceClient<pendulum::AddPendulum>("/gui/add_pendulum");
+  ros::ServiceClient client = nh.serviceClient<pendulum::DrawSystem>("/gui/add_pendulum");
 
   int count = 0;
   while(!client.exists() && count < 10) {
@@ -167,16 +167,17 @@ bool display(ros::NodeHandle &nh, const std::string &name, const pendulum::State
   }
 
   if(count >= 10) {
-    ROS_WARN("Timeout waiting for AddPendulum service to exist.");
+    ROS_WARN("Timeout waiting for DrawSystem service to exist.");
     return false;
   }
 
-  pendulum::AddPendulum add_srv;
+  pendulum::DrawSystem add_srv;
   add_srv.request.name  = name;
   add_srv.request.x     = x0.x;
   add_srv.request.theta = x0.theta;
   add_srv.request.base_color = "blue";
   add_srv.request.pendulum_color = "#FC33FF";
+  add_srv.request.img_type = pendulum::DrawSystemRequest::PENDULUM;
 
   return client.call(add_srv);
 }

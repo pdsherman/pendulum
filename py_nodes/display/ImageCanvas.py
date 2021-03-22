@@ -9,7 +9,7 @@ Description: Canvas to draw the representation of the pendulum
 
 from tkinter import *
 
-from PendulumImage import PendulumImage
+from SystemImages import PendulumImage, MassOnlyImage
 
 class ImageCanvas(Canvas):
     def __init__(self, parent=None, width=350, height=300, **options):
@@ -24,22 +24,33 @@ class ImageCanvas(Canvas):
         # Collection of pendulums to display
         self.pendulums = {}
 
+        # Collection of mass only objects to display
+        self.masses = {}
+
         # Names of all pendulums to display
         self.legend = {}
 
-    def add_pendulum(self, name, x0, theta0, base_fill, pend_fill):
-        if(self.pendulums.get(name) != None):
+    def add_image(self, img_type, name, x0, theta0, base_fill, pend_fill):
+        if(self.pendulums.get(name) != None or self.masses.get(name) != None):
             return False
 
-        # Add pendulum
-        pendulum = PendulumImage(x0, theta0, name)
-        base_id = self.create_polygon(pendulum.get_base_points(), fill=base_fill)
-        pend_id = self.create_polygon(pendulum.get_pendulum_points(), fill=pend_fill)
-        circle_id = self.create_oval(pendulum.get_rotation_circle_points(), fill='green')
-        self.pendulums[name] = {"base_id":base_id,
-                    "pend_id":pend_id,
-                    "circle_id":circle_id,
-                    "pendulum":pendulum}
+        if(img_type == "pendulum"):
+            # Add pendulum
+            pendulum = PendulumImage(x0, theta0, name)
+            base_id = self.create_polygon(pendulum.get_base_points(), fill=base_fill)
+            pend_id = self.create_polygon(pendulum.get_pendulum_points(), fill=pend_fill)
+            circle_id = self.create_oval(pendulum.get_rotation_circle_points(), fill='green')
+            self.pendulums[name] = {"base_id":base_id,
+                        "pend_id":pend_id,
+                        "circle_id":circle_id,
+                        "pendulum":pendulum}
+        elif(img_type == "mass_only"):
+            # Add mass object
+            mass = BaseImage(x0, name)
+            base_id = self.create_polygon(mass.get_base_points(), fill=base_fill)
+            self.masses[name] = {"base_id":base_id, "mass":mass}
+        else:
+            return False
 
         # Add to legend
         place = len(self.legend)+1
@@ -50,15 +61,19 @@ class ImageCanvas(Canvas):
 
         return True
 
-    def remove_pendulum(self, name):
-        if(self.pendulums.get(name) == None):
+    def remove_image(self, name):
+        if(self.pendulums.get(name) != None):
+            # Delete items from canvas first, then remove from dict
+            self.delete(self.pendulums[name]["base_id"])
+            self.delete(self.pendulums[name]["pend_id"])
+            self.delete(self.pendulums[name]["circle_id"])
+            del self.pendulums[name]
+        elif(self.masses.get(name) != None):
+            # Delete items from canvas first, then remove from dict
+            self.delete(self.masses[name]["base_id"])
+            del self.masses[name]
+        else:
             return False
-
-        # Delete items from canvas first, then remove from dict
-        self.delete(self.pendulums[name]["base_id"])
-        self.delete(self.pendulums[name]["pend_id"])
-        self.delete(self.pendulums[name]["circle_id"])
-        del self.pendulums[name]
 
         self.delete(self.legend[name]["text_id"])
         self.delete(self.legend[name]["box_id"])
@@ -71,9 +86,14 @@ class ImageCanvas(Canvas):
                 self.move(self.legend[key]["box_id"], 0, -25)
                 self.legend[key]["place"] -= 1
 
+        return True
+
     def update_drawing(self):
         for key in self.pendulums:
             pendulum = self.pendulums[key]["pendulum"]
             self.coords(self.pendulums[key]["base_id"], pendulum.get_base_points())
             self.coords(self.pendulums[key]["pend_id"], pendulum.get_pendulum_points())
             self.coords(self.pendulums[key]["circle_id"], pendulum.get_rotation_circle_points())
+        for key in self.masses:
+            mass = self.masses[key]["mass"]
+            self.coords(self.masses[key]["base_id"], mass.get_base_points())

@@ -1,7 +1,11 @@
+int8 PENDULUM = 1
+int8 MASS_ONLY = 2
+
 string name
 float32 x
 float32 theta
 string base_color
 string pendulum_color
+int8 img_type
 ---
 bool result

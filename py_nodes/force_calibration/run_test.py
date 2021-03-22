@@ -100,7 +100,6 @@ def delay(x):
 #--           MAIN            --#
 #-------------------------------#
 
-
 # Setup:
 rospy.init_node("force_test", anonymous=False)
 mtr = RosMotor() # Interface to benchtop motor

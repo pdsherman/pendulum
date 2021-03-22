@@ -12,7 +12,6 @@
 #include <libs/util/util.hpp>
 
 #include <pendulum/State.h>
-#include <pendulum/AddPendulum.h>
 #include <pendulum/RemovePendulum.h>
 #include <pendulum/GraphData.h>
 #include <pendulum/LoggingStart.h>

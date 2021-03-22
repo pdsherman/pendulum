@@ -6,11 +6,11 @@ Date:   Jan. 2020
 """
 
 import rospy
-from math import cos, sin, radians, pi
 
+from math import cos, sin, radians, pi
 from pendulum.msg import State
 
-class PendulumImage:
+class BaseImage:
     def __init__(self, x0, theta0, name):
 
         # Dimensions (pixels) for base object
@@ -20,16 +20,12 @@ class PendulumImage:
         # Vertical position (pixels) of moving base
         self.base_y = 275.0
 
-        # Dimensions (pixels) for my fake pendulum
-        self.length = 245.0
-        self.width  = 15.0
-
         # State variable x is in meters
         # Scaling converts x to pixels (1 m = X pixels)
         self.scaling = 500.0
 
         # Iitialize State
-        self.x = x0*self.scaling
+        self.x     = x0*self.scaling
         self.theta = theta0
 
         # ROS subscriber for updates to state
@@ -37,27 +33,10 @@ class PendulumImage:
 
     def set_state(self, state):
         self.x = state.x*self.scaling
-
-        # Theta comes in radians
         self.theta = state.theta
 
     def get_state(self):
         return State(x=self.x, theta=self.theta)
-
-    def pendulum_center(self):
-        x_p = self.x + 0.45*self.length*cos(self.theta)
-        y_p = self.base_y - 0.45*self.length*sin(self.theta)
-        return [x_p, y_p]
-
-    def get_base_points(self):
-        return self.get_points([self.x, self.base_y], self.base_width, self.base_height)
-
-    def get_pendulum_points(self):
-        return self.get_points(self.pendulum_center(), self.length, self.width, self.theta)
-
-    def get_rotation_circle_points(self):
-        radius = 5
-        return [self.x-radius, self.base_y-radius, self.x+radius, self.base_y+radius]
 
     def get_points(self, center, width, height, theta=0.0):
 
@@ -78,3 +57,34 @@ class PendulumImage:
         bl_y = br_y + width*sin(theta)
 
         return [tr_x, tr_y, br_x, br_y, bl_x, bl_y, tl_x, tl_y]
+
+
+class MassOnlyImage(SystemImage):
+    def __init__(self, x0, name):
+        SystemImage.__init__(self, x0, 0.0, name)
+
+    def get_base_points(self):
+        return self.get_points([self.x, self.base_y], self.base_width, self.base_height)
+
+class PendulumImage(SystemImage):
+    def __init__(self, x0, theta0, name):
+        SystemImage.__init__(self, x0, theta0, name)
+
+        # Dimensions (pixels) for my fake pendulum
+        self.length = 245.0
+        self.width  = 15.0
+
+    def pendulum_center(self):
+        x_p = self.x + 0.45*self.length*cos(self.theta)
+        y_p = self.base_y - 0.45*self.length*sin(self.theta)
+        return [x_p, y_p]
+
+    def get_base_points(self):
+        return self.get_points([self.x, self.base_y], self.base_width, self.base_height)
+
+    def get_pendulum_points(self):
+        return self.get_points(self.pendulum_center(), self.length, self.width, self.theta)
+
+    def get_rotation_circle_points(self):
+        radius = 5
+        return [self.x-radius, self.base_y-radius, self.x+radius, self.base_y+radius]
