@@ -24,12 +24,23 @@
 static const std::string db_filename = "EncoderData.db";
 static MsgHandler msg_handler;
 
-/// Function for LoggingDropTable service.
-// Stops logging if active, then drops table from SQLite database
-bool drop_table(pendulum::LoggingDropTable::Request &req, pendulum::LoggingDropTable::Response &res);
+// Function object for LoggingStart service.
+// Creates a new SQLite table object and will subscribe to topic to insert into database
+// Will need to use boost::bind to match required format for ROS service server
+bool logging_start_func(
+  pendulum::LoggingStart::Request &req,
+  pendulum::LoggingStart::Response &res,
+  ros::NodeHandle &nh,
+  ros::Subscriber &subscriber);
 
-
+// Function object for LoggingStop service.
+// Creates a new SQLite table object and will subscribe to topic to insert into database
+// Lambda used to capture the ROS NodeHandle and Subscriber objects for use in function
 bool logging_stop_cb(pendulum::LoggingStop::Request &req, pendulum::LoggingStop::Response &res);
+
+/// Function for LoggingDropTable service.
+/// Stops logging if active, then drops table from SQLite database
+bool drop_table(pendulum::LoggingDropTable::Request &req, pendulum::LoggingDropTable::Response &res);
 
 /// Function for LoggingBufferCheck service.
 /// Checks if logging has any buffered data to insert into database.
@@ -46,37 +57,9 @@ int main(int argc, char* argv[])
   ros::NodeHandle nh("sqlite");
   ros::Subscriber subscriber;
 
-  // Function object for LoggingStart service.
-  // Creates a new SQLite table object and will subscribing to topic to insert into database
-  // Lambda used to capture the ROS NodeHandle and Subscriber objects for use in function
   // Using boost since ros does not accept std::function. (as of Aug. 2020)
-  boost::function<bool(pendulum::LoggingStart::Request &, pendulum::LoggingStart::Response &)> logging_start_cb =
-  [&nh, &subscriber](pendulum::LoggingStart::Request &req, pendulum::LoggingStart::Response &res)
-  {
-    if(!msg_handler.logging_is_active()) {
-      std::unique_ptr<SqliteTable> table = std::unique_ptr<SqliteTable>(new SqliteTable(req.table_name));
-      if(table->open_database(db_filename) && table->create_table()){
-        msg_handler.set_table(std::move(table));
-        if(msg_handler.logging_begin()) {
-          // Subscribe to topic
-          std::string topic = req.topic_name;
-          topic.insert(0, "/");
-          subscriber = nh.subscribe(topic, 2000, &msg_callback);
-
-          res.success = true;
-          ROS_INFO("SQLite logging started");
-        }
-      } else {
-        table = nullptr;
-        res.success = false;
-        ROS_WARN("Failed to open DB or create table");
-      }
-    } else {
-      ROS_WARN("Logging already active");
-    }
-
-    return true;
-  };
+  boost::function<bool(pendulum::LoggingStart::Request &, pendulum::LoggingStart::Response &)>
+    logging_start_cb = boost::bind(logging_start_func, _1, _2, nh, subscriber);
 
   ros::ServiceServer start_server = nh.advertiseService("start_log", logging_start_cb);
   ros::ServiceServer stop_server = nh.advertiseService("stop_log", logging_stop_cb);
@@ -103,6 +86,48 @@ void msg_callback(const pendulum::State::ConstPtr &msg)
   msg_handler.buffer_data(std::move(d));
 }
 
+bool logging_start_func(
+  pendulum::LoggingStart::Request &req,
+  pendulum::LoggingStart::Response &res,
+  ros::NodeHandle &nh,
+  ros::Subscriber &subscriber)
+{
+  if(!msg_handler.logging_is_active()) {
+    std::unique_ptr<SqliteTable> table = std::unique_ptr<SqliteTable>(new SqliteTable(req.table_name));
+    if(table->open_database(db_filename) && table->create_table()){
+      msg_handler.set_table(std::move(table));
+      if(msg_handler.logging_begin()) {
+        // Subscribe to topic
+        std::string topic = req.topic_name;
+        topic.insert(0, "/");
+        subscriber = nh.subscribe(topic, 2000, &msg_callback);
+
+        res.success = true;
+        ROS_INFO("SQLite logging started");
+      }
+    } else {
+      table = nullptr;
+      res.success = false;
+      ROS_WARN("Failed to open DB or create table");
+    }
+  } else {
+    res.success = false;
+    ROS_WARN("Logging already active");
+  }
+
+  return true;
+}
+
+bool logging_stop_cb(pendulum::LoggingStop::Request &req, pendulum::LoggingStop::Response &res)
+{
+  if(msg_handler.logging_is_active()) {
+    msg_handler.logging_end();
+    while(msg_handler.logging_is_active()) { ros::Duration(0.2).sleep(); }
+  }
+  ROS_INFO("Logging Stopped");
+  return true;
+}
+
 bool drop_table(pendulum::LoggingDropTable::Request &req, pendulum::LoggingDropTable::Response &res)
 {
   if(msg_handler.logging_is_active()) {
@@ -116,16 +141,6 @@ bool drop_table(pendulum::LoggingDropTable::Request &req, pendulum::LoggingDropT
   else
     res.success = false;
 
-  return true;
-}
-
-bool logging_stop_cb(pendulum::LoggingStop::Request &req, pendulum::LoggingStop::Response &res)
-{
-  if(msg_handler.logging_is_active()) {
-    msg_handler.logging_end();
-    while(msg_handler.logging_is_active()) { ros::Duration(0.2).sleep(); }
-  }
-  ROS_INFO("Logging Stopped");
   return true;
 }
 

@@ -69,6 +69,7 @@ void RosMotor::disable_drive_mode(void)
 void RosMotor::drive_current(const double current_A)
 {
   std::lock_guard<std::mutex> lock(_mtx_mtr);
+  ROS_INFO("Motor Drive Current: %f", current_A);
   _mtr.commanded_current(current_A);
 }
 
@@ -108,6 +109,7 @@ bool RosMotor::set_motor_gains(pendulum::MotorControlGains::Request &req, pendul
 
 void RosMotor::cmd_current_cb(const pendulum::Current::ConstPtr &msg)
 {
+  ROS_INFO("Commanded Current: %0.2f", msg->current_A);
   _target_current.store(msg->current_A);
 }
 

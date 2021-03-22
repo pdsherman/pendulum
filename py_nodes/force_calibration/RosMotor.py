@@ -21,6 +21,7 @@ class RosMotor:
 
         rospy.Subscriber(motor_node+"/current_measured", Current, self.callback)
         self.pub = rospy.Publisher(motor_node+"/current_cmd", Current, queue_size=10)
+        self.seq = 1;
 
         self.drive_srv_name = motor_node + '/drive_mode'
         self.current_srv_name = motor_node + '/control_gains'
@@ -43,12 +44,14 @@ class RosMotor:
         return self.measured_current
 
     def drive_current(self, current):
+
         msg = Current()
         msg.header.stamp = rospy.Time.now()
-        msg.header.seq += 1
+        msg.header.seq += self.seq
         msg.current_A = current
-
         self.pub.publish(msg)
+
+        self.seq += 1
         self.target_current = current
 
     def set_current_gains(self, Cp, Ci):

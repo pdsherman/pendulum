@@ -17,22 +17,24 @@ SqliteTable::~SqliteTable(void)
   sqlite3_shutdown();
 }
 
+std::string SqliteTable::get_table_name(void) const
+{
+  return _table_name;
+}
+
 bool SqliteTable::open_database(const std::string &database_file)
 {
-  sqlite3 *db_local = nullptr;
-
   static constexpr int flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
+
+  sqlite3 *db_local = nullptr;
   std::string full_path = kDatabaseDirectory + database_file;
   int r = sqlite3_open_v2(full_path.c_str(), &db_local, flags, nullptr);
 
   if(r == SQLITE_OK){
     _db = std::shared_ptr<sqlite3>(db_local, [](sqlite3 *p) { sqlite3_close(p); } );
-  } else {
-    //ROS_ERROR("Failed to open SQLite database");
-    return false;
+    return true; //"Failed to create table in SQLite database"
   }
-
-  return true;
+  return false;
 }
 
 bool SqliteTable::create_table(void) {
@@ -45,9 +47,8 @@ bool SqliteTable::create_table(void) {
 
   sqlite3_stmt *st = nullptr;
   if(sqlite3_prepare_v2(_db.get(), cmd.c_str(), -1, &st, nullptr) != SQLITE_OK) {
-    //ROS_ERROR("Failed to create table in SQLite database");
     sqlite3_finalize(st);
-    return false;
+    return false; //"Failed to create table in SQLite database"
   }
 
   _table_exists = (sqlite3_step(st) == SQLITE_DONE);
@@ -62,9 +63,8 @@ bool SqliteTable::delete_table(void)
   std::string cmd = "DROP TABLE IF EXISTS " + _table_name;
   sqlite3_stmt *st = nullptr;
   if(sqlite3_prepare_v2(_db.get(), cmd.c_str(), -1, &st, nullptr) != SQLITE_OK) {
-    //ROS_ERROR("Failed to drop table in SQLite database");
     sqlite3_finalize(st);
-    return false;
+    return false; // "Failed to drop table in SQLite database"
   }
 
   //ROS_INFO("Dropped table %s from SQLite database", _table_name.c_str());

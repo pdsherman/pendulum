@@ -14,7 +14,6 @@
 #include <string>
 #include <memory>
 
-
 class SqliteTable {
 public:
   /// Constructor
@@ -23,6 +22,9 @@ public:
 
   /// Destructor
   ~SqliteTable(void);
+
+  /// @return Get the the table name
+  std::string get_table_name(void) const;
 
   /// Open database.
   /// @param [in] database_file Filename of database
@@ -38,15 +40,6 @@ public:
   /// Remove table from the database if it exists
   /// @return True if table existed in database and was removed
   bool delete_table(void);
-
-  /// Subscribe table to topic to begin logging to database
-  /// @param [in] nh ROS node handle object
-  /// @param [in] topic Name of the ROS topic to subscribe to
-  //void subscribe(ros::NodeHandle &nh, std::string &topic
-
-  /// Set the start test start time
-  /// @param [in] start_time Time to set for start
-  //void set_start_time(ros::Time start_time);
 
   /// Insert row into table
   /// @param [in] timestamp Timestamp when datapoint sampled

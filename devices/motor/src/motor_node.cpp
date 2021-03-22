@@ -13,6 +13,6 @@ int main(int argc, char *argv[])
     ROS_INFO("Motor amp configured.");
     ros::spin();
   } else {
-      ROS_WARN("Failed to configure motor amp.");
+    ROS_WARN("Failed to configure motor amp.");
   }
 }

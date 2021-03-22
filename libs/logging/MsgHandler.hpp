@@ -57,6 +57,7 @@ public:
   void logging_end(void);
 
   bool logging_is_active(void);
+
 private:
 
   void logging_thread_func(void);
