@@ -67,7 +67,6 @@ bool SqliteTable::delete_table(void)
     return false; // "Failed to drop table in SQLite database"
   }
 
-  //ROS_INFO("Dropped table %s from SQLite database", _table_name.c_str());
   _table_exists = false;
   sqlite3_step(st);
   sqlite3_finalize(st);
@@ -91,7 +90,7 @@ bool SqliteTable::insert_row(const double timestamp, const double test_time, con
   sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, ":x"), x);
   sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, ":theta"), theta);
 
-  bool result = sqlite3_step(stmt) == SQLITE_DONE;
+  bool result = (sqlite3_step(stmt) == SQLITE_DONE);
   sqlite3_finalize(stmt);
   return result;
 }

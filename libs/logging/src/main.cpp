@@ -21,7 +21,7 @@
 #include <memory>
 #include <string>
 
-static const std::string db_filename = "EncoderData.db";
+static const std::string db_filename = "PendulumDatabase.db";
 static MsgHandler msg_handler;
 
 // Function object for LoggingStart service.
@@ -66,7 +66,7 @@ int main(int argc, char* argv[])
   ros::ServiceServer buffer_check_server = nh.advertiseService("log_buffer_check", logging_buff_check);
   ros::ServiceServer remove_table_server = nh.advertiseService("drop_table", drop_table);
 
-  ros::Rate rate(1/0.005);
+  ros::Rate rate(1/0.01);
   while(ros::ok()) {
     ros::spinOnce();
     rate.sleep();
