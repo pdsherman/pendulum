@@ -46,8 +46,8 @@ bool drop_table(pendulum::LoggingDropTable::Request &req, pendulum::LoggingDropT
 /// Checks if logging has any buffered data to insert into database.
 bool logging_buff_check(pendulum::LoggingBufferCheck::Request &req, pendulum::LoggingBufferCheck::Response &res);
 
-/// Callback function for the ROS subscriber. Saves
-/// msg for logging into SQLite table
+/// Callback function for the ROS subscriber.
+/// Saves msg for logging into SQLite table
 /// @param [in] msg Published datapoint
 void msg_callback(const pendulum::State::ConstPtr &msg);
 

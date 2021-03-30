@@ -7,7 +7,7 @@ const std::string SqliteTable::kDatabaseDirectory =
             "/home/pdsherman/projects/pendulum/catkin_ws/src/pendulum/data/";
 
 SqliteTable::SqliteTable(const std::string &table_name)
-  : _db(nullptr), _table_name(table_name)
+  : _db(nullptr), _insert_stmt(nullptr), _table_exists(false), _table_name(table_name)
 {
 }
 
@@ -31,19 +31,30 @@ bool SqliteTable::open_database(const std::string &database_file)
   int r = sqlite3_open_v2(full_path.c_str(), &db_local, flags, nullptr);
 
   if(r == SQLITE_OK){
+    // PRAGMA's Improve insertion times by ~99%. Sacfricing robustness
+    // Okay for personal project like this where its not a big deal
+    // if database is corrupted and is lost.
+    sqlite3_exec(db_local, "PRAGMA synchronous = OFF", NULL, NULL, NULL);
+    sqlite3_exec(db_local, "PRAGMA journal_mode = MEMORY", NULL, NULL, NULL);
+
     _db = std::shared_ptr<sqlite3>(db_local, [](sqlite3 *p) { sqlite3_close(p); } );
-    return true; //"Failed to create table in SQLite database"
+    return true;
   }
-  return false;
+  return false; //"Failed to create table in SQLite database"
 }
 
-bool SqliteTable::create_table(void) {
-  if(!_db || _table_name.empty()) { return false; }
+bool SqliteTable::create_table(const std::vector<std::string> &columns) {
+  if(!_db || _table_name.empty() || columns.empty()) { return false; }
 
   _table_exists = false;
 
-  std::string cmd = "CREATE TABLE IF NOT EXISTS " + _table_name;
-  cmd += " (timestamp REAL, test_time_s REAL, x REAL, theta REAL)";
+  std::string cmd = "CREATE TABLE IF NOT EXISTS " + _table_name + " (";
+  cmd += columns[0] + " STRING, ";
+  for(size_t i = 1; i < columns.size(); ++i)
+    cmd += columns[i] + " REAL, ";
+  cmd.pop_back();
+  cmd.pop_back();
+  cmd += ")";
 
   sqlite3_stmt *st = nullptr;
   if(sqlite3_prepare_v2(_db.get(), cmd.c_str(), -1, &st, nullptr) != SQLITE_OK) {
@@ -53,7 +64,37 @@ bool SqliteTable::create_table(void) {
 
   _table_exists = (sqlite3_step(st) == SQLITE_DONE);
   sqlite3_finalize(st);
-  return _table_exists;
+
+  if(_table_exists)
+    return creat_insert_stmt(columns);
+  return false;
+}
+
+bool SqliteTable::creat_insert_stmt(const std::vector<std::string> &columns)
+{
+  std::string cmd = "INSERT INTO " + _table_name + " (";
+  for(auto &s : columns) { cmd += s + ", "; }
+  cmd.pop_back();
+  cmd.pop_back();
+  cmd += ") VALUES (";
+  for(size_t i = 0; i < columns.size(); ++i) {
+    cmd += ":x" + std::to_string(i) + ", ";
+  }
+  cmd.pop_back();
+  cmd.pop_back();
+  cmd += ")";
+
+  sqlite3_stmt* stmt;
+  if(sqlite3_prepare_v2(_db.get(), cmd.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+    sqlite3_finalize(stmt);
+    _insert_stmt = nullptr;
+    _insert_cmd.empty();
+    return false;
+  }
+
+  _insert_cmd = cmd;
+  _insert_stmt = std::shared_ptr<sqlite3_stmt>(stmt,[](sqlite3_stmt *p) { sqlite3_finalize(p); });
+  return true;
 }
 
 bool SqliteTable::delete_table(void)
@@ -73,24 +114,18 @@ bool SqliteTable::delete_table(void)
   return true;
 }
 
-bool SqliteTable::insert_row(const double timestamp, const double test_time, const double x, const double theta) {
-  if(!_db || !_table_exists) { return false; }
+bool SqliteTable::insert_row(const std::string &test_index, const std::vector<double> &data) {
+  if(!_db || !_table_exists || !_insert_stmt) { return false; }
 
-  std::string cmd = "INSERT INTO " + _table_name;
-  cmd += " (timestamp, test_time_s, x, theta) VALUES (:ts, :tt, :x, :theta)";
-
-  sqlite3_stmt* stmt;
-  if(sqlite3_prepare_v2(_db.get(), cmd.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
-    sqlite3_finalize(stmt);
-    return false;
+  sqlite3_bind_text(_insert_stmt.get(), sqlite3_bind_parameter_index(_insert_stmt.get(), ":x0"),
+    test_index.c_str(), test_index.size(), SQLITE_STATIC);
+  for(size_t i = 0; i < data.size(); ++i) {
+    std::string s = ":x" + std::to_string(i+1);
+    sqlite3_bind_double(_insert_stmt.get(), sqlite3_bind_parameter_index(_insert_stmt.get(), s.c_str()), data[i]);
   }
 
-  sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, ":ts"), timestamp);
-  sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, ":tt"), test_time);
-  sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, ":x"), x);
-  sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, ":theta"), theta);
-
-  bool result = (sqlite3_step(stmt) == SQLITE_DONE);
-  sqlite3_finalize(stmt);
+  bool result = (sqlite3_step(_insert_stmt.get()) == SQLITE_DONE);
+  sqlite3_clear_bindings(_insert_stmt.get());
+  sqlite3_reset(_insert_stmt.get());
   return result;
 }

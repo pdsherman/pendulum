@@ -4,6 +4,8 @@
  * Date:    Sept. 2020
  */
 
+#pragma once
+
 #include <vector>
 #include <chrono>
 

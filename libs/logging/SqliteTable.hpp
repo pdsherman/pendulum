@@ -16,6 +16,14 @@
 
 class SqliteTable {
 public:
+  enum class DataTypes {
+    kNull,
+    kInteger,
+    kReal,
+    kText,
+    kBlob
+  };
+
   /// Constructor
   /// @param [in] database_file Filename of SQLite database
   SqliteTable(const std::string &table_name);
@@ -34,8 +42,9 @@ public:
   bool open_database(const std::string &database_file = "");
 
   /// Creates the table in that database if it doesn't already exist
+  /// @param [in] columns Vector of strings naming the table columns
   /// @return True if table created successfully
-  bool create_table(void);
+  bool create_table(const std::vector<std::string> &columns);
 
   /// Remove table from the database if it exists
   /// @return True if table existed in database and was removed
@@ -44,21 +53,25 @@ public:
   /// Insert row into table
   /// @param [in] timestamp Timestamp when datapoint sampled
   /// @param [in] test_time Time from the start of the test
-  /// @param [in] x State variable X
-  /// @param [in] theta State variable theta
   /// @return True if row inserted into table successfully
-  bool insert_row(const double timestamp, const double test_time, const double x, const double theta);
+  bool insert_row(const std::string &test_index, const std::vector<double> &data);
 
 private:
+
+  bool creat_insert_stmt(const std::vector<std::string> &colums);
 
   /// Pointer to database
   std::shared_ptr<sqlite3> _db;
 
-  /// Name of table in database
-  std::string _table_name;
+  std::shared_ptr<sqlite3_stmt> _insert_stmt;
 
   /// Does the table exisit in the database
   bool _table_exists;
+
+  /// Name of table in database
+  std::string _table_name;
+
+  std::string _insert_cmd;
 
   /// Flags for creating table
   static constexpr int kDbFlags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
