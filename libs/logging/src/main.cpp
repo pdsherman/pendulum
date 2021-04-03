@@ -7,9 +7,9 @@
 */
 
 #include <libs/logging/SqliteTable.hpp>
-#include <libs/logging/MsgHandler.hpp>
+#include <libs/logging/DataHandler.hpp>
 
-#include <pendulum/State.h>
+#include <pendulum/LoggingData.h>
 #include <pendulum/LoggingStart.h>
 #include <pendulum/LoggingStop.h>
 #include <pendulum/LoggingDropTable.h>
@@ -22,7 +22,7 @@
 #include <string>
 
 static const std::string db_filename = "PendulumDatabase.db";
-static MsgHandler msg_handler;
+static DataHandler data_handler;
 
 // Function object for LoggingStart service.
 // Creates a new SQLite table object and will subscribe to topic to insert into database
@@ -49,7 +49,7 @@ bool logging_buff_check(pendulum::LoggingBufferCheck::Request &req, pendulum::Lo
 /// Callback function for the ROS subscriber.
 /// Saves msg for logging into SQLite table
 /// @param [in] msg Published datapoint
-void msg_callback(const pendulum::State::ConstPtr &msg);
+void msg_callback(const pendulum::LoggingData::ConstPtr &msg);
 
 int main(int argc, char* argv[])
 {
@@ -67,6 +67,7 @@ int main(int argc, char* argv[])
   ros::ServiceServer remove_table_server = nh.advertiseService("drop_table", drop_table);
 
   ros::Rate rate(1/0.01);
+  ROS_INFO("SQLite Logging Node Started.");
   while(ros::ok()) {
     ros::spinOnce();
     rate.sleep();
@@ -75,15 +76,9 @@ int main(int argc, char* argv[])
   return 0;
 }
 
-void msg_callback(const pendulum::State::ConstPtr &msg)
+void msg_callback(const pendulum::LoggingData::ConstPtr &msg)
 {
-  MsgHandler::MsgData d;
-  d.timestamp = msg->header.stamp.toSec();
-  d.theta     = msg->theta;
-  d.x         = msg->x;
-  d.test_time = msg->test_time_s;
-
-  msg_handler.buffer_data(std::move(d));
+  data_handler.buffer_data(msg->test_name, msg->data);
 }
 
 bool logging_start_func(
@@ -92,11 +87,11 @@ bool logging_start_func(
   ros::NodeHandle &nh,
   ros::Subscriber &subscriber)
 {
-  if(!msg_handler.logging_is_active()) {
+  if(!data_handler.logging_is_active()) {
     std::unique_ptr<SqliteTable> table = std::unique_ptr<SqliteTable>(new SqliteTable(req.table_name));
-    if(table->open_database(db_filename) && table->create_table()){
-      msg_handler.set_table(std::move(table));
-      if(msg_handler.logging_begin()) {
+    if(table->open_database(db_filename) && table->create_table(req.header)){
+      data_handler.set_table(std::move(table));
+      if(data_handler.logging_begin()) {
         // Subscribe to topic
         std::string topic = req.topic_name;
         topic.insert(0, "/");
@@ -120,33 +115,35 @@ bool logging_start_func(
 
 bool logging_stop_cb(pendulum::LoggingStop::Request &req, pendulum::LoggingStop::Response &res)
 {
-  if(msg_handler.logging_is_active()) {
-    msg_handler.logging_end();
-    while(msg_handler.logging_is_active()) { ros::Duration(0.2).sleep(); }
+  if(data_handler.logging_is_active()) {
+    data_handler.logging_end();
+    while(data_handler.logging_is_active()) { ros::Duration(0.2).sleep(); }
   }
-  ROS_INFO("Logging Stopped");
+  ROS_INFO("Logging Stopped.");
   return true;
 }
 
 bool drop_table(pendulum::LoggingDropTable::Request &req, pendulum::LoggingDropTable::Response &res)
 {
-  if(msg_handler.logging_is_active()) {
-    msg_handler.logging_end();
-    while(msg_handler.logging_is_active()) { ros::Duration(0.2).sleep(); }
+  if(data_handler.logging_is_active()) {
+    data_handler.logging_end();
+    while(data_handler.logging_is_active()) { ros::Duration(0.2).sleep(); }
   }
 
   std::unique_ptr<SqliteTable> tbl = std::unique_ptr<SqliteTable>(new SqliteTable(req.table_name));
-  if(tbl->open_database(db_filename) && tbl->delete_table())
+   if(tbl->open_database(db_filename) && tbl->delete_table()) {
     res.success = true;
-  else
+    ROS_INFO("Log Table Dropped.");
+  } else {
     res.success = false;
+  }
 
   return true;
 }
 
 bool logging_buff_check(pendulum::LoggingBufferCheck::Request &req, pendulum::LoggingBufferCheck::Response &res)
 {
-  res.size     = msg_handler.buffer_size();
-  res.is_empty = msg_handler.buffer_empty();
+  res.size     = data_handler.buffer_size();
+  res.is_empty = data_handler.buffer_empty();
   return true;
 }

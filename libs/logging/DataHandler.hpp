@@ -1,11 +1,13 @@
 /*
- * File:    MsgHandlerhpp
+ * File:    DataHandlerhpp
  * Author:  pdsherman
  * Date:    Sept. 2020
  *
  * Description: Object to handle multi-threading of
  *              buffering and inserting State data into database.
  */
+
+#pragma once
 
 #include <libs/logging/SqliteTable.hpp>
 
@@ -15,25 +17,19 @@
 #include <thread>
 #include <atomic>
 
-class MsgHandler
+class DataHandler
 {
 public:
-  struct MsgData {
-    double timestamp;
-    double theta;
-    double x;
-    double test_time;
-  };
 
   /// Default constructor
-  MsgHandler(void) = default;
+  DataHandler(void) = default;
 
   /// Constructor
   /// @param [in] tbl SQLite table for inserting data
-  MsgHandler(std::unique_ptr<SqliteTable> &&tbl);
+  DataHandler(std::unique_ptr<SqliteTable> &&tbl);
 
   /// Destructor
-  ~MsgHandler(void);
+  ~DataHandler(void);
 
   /// Set the SqliteTable to use for logging
   /// @param [in] tbl Sqlite table to use
@@ -41,7 +37,7 @@ public:
 
   /// Insert data into buffer to be inserted into SQLite table
   /// @param [in] data New datapoint to buffer
-  void buffer_data(MsgData &&data);
+  void buffer_data(const std::string &test_name, const std::vector<double> &data);
 
   /// Check if the data buffer has any remaining data points to insert.
   /// @return True if buffer is empty.
@@ -60,15 +56,25 @@ public:
 
 private:
 
+  using Row = std::pair<std::string, std::vector<double>>;
+
+  /// Function to run in thread.
+  /// Will constantly loop and attempt to
+  /// remove data from buffer and insert into database
   void logging_thread_func(void);
 
+  /// Interface object for writing to SQLite database
   std::unique_ptr<SqliteTable> _table;
 
-  std::queue<MsgData> _buffer;
+  /// Buffer object for data to be logged
+  std::queue<Row> _buffer;
 
+  /// Mutex for lokcing acces to buffer
   std::mutex _buffer_mtx;
 
+  /// Thread object to run logging function
   std::thread _logging_thread;
 
+  /// Flag to signal thread to stop running
   std::atomic<bool> _logging_active;
 };

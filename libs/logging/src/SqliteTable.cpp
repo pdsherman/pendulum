@@ -88,11 +88,9 @@ bool SqliteTable::creat_insert_stmt(const std::vector<std::string> &columns)
   if(sqlite3_prepare_v2(_db.get(), cmd.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
     sqlite3_finalize(stmt);
     _insert_stmt = nullptr;
-    _insert_cmd.empty();
     return false;
   }
 
-  _insert_cmd = cmd;
   _insert_stmt = std::shared_ptr<sqlite3_stmt>(stmt,[](sqlite3_stmt *p) { sqlite3_finalize(p); });
   return true;
 }
@@ -109,6 +107,8 @@ bool SqliteTable::delete_table(void)
   }
 
   _table_exists = false;
+  _insert_stmt = nullptr;
+  
   sqlite3_step(st);
   sqlite3_finalize(st);
   return true;

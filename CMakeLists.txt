@@ -35,6 +35,7 @@ add_message_files( DIRECTORY ${PROJECT_SOURCE_DIR}/msg
    State.msg
    Control.msg
    Current.msg
+   LoggingData.msg
 )
 
 add_service_files( DIRECTORY ${PROJECT_SOURCE_DIR}/srv

@@ -63,6 +63,7 @@ private:
   /// Pointer to database
   std::shared_ptr<sqlite3> _db;
 
+  /// Insertion statement to persists for life of logging process
   std::shared_ptr<sqlite3_stmt> _insert_stmt;
 
   /// Does the table exisit in the database
@@ -70,8 +71,6 @@ private:
 
   /// Name of table in database
   std::string _table_name;
-
-  std::string _insert_cmd;
 
   /// Flags for creating table
   static constexpr int kDbFlags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;

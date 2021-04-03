@@ -17,7 +17,7 @@ import u6                 # LabJack python library (loadcell sampling)
 from RosMotor import *    # Interfacing with benchtop motor
 
 def v2N(volt):
-    return 40.0975*volt - 246.9117
+    return 38.697*volt - 238.027
 
 def linreg(x, y):
     xavg = np.mean(x)
@@ -117,7 +117,7 @@ delay(2.0)
 NUM_CYCLES   = 30 # Number of times to test each current point
 results      = [] # Will fill with data points in format (Current, Force, Voltage)
 
-AMPS_TO_TEST = np.linspace(-1.2, 1.2, 31)
+AMPS_TO_TEST = np.linspace(-0.8, 0.8, 4)
 
 for i in range(NUM_CYCLES):
     for amp in AMPS_TO_TEST:
