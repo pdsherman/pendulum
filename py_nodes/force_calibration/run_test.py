@@ -6,15 +6,21 @@ Author: pdsherman
 Date:   March. 2021
 """
 
-import sys
-import time
-import math
+from pendulum.srv import LoggingStart, LoggingStartRequest, LoggingStartResponse
+from pendulum.srv import LoggingStop, LoggingStopRequest, LoggingStopResponse
+from pendulum.srv import LoggingBufferCheck, LoggingBufferCheckRequest, LoggingBufferCheckResponse
+from pendulum.msg import LoggingData
+
+import u6                 # LabJack python library (loadcell sampling)
+from RosMotor import *    # Interfacing with benchtop motor
 
 import numpy as np
 import matplotlib.pyplot as plt
 
-import u6                 # LabJack python library (loadcell sampling)
-from RosMotor import *    # Interfacing with benchtop motor
+import argparse
+import sys
+import time
+import math
 
 def v2N(volt):
     return 38.697*volt - 238.027
@@ -96,9 +102,60 @@ def delay(x):
     while(time.time() < start_time + 2.0 and not rospy.is_shutdown()):
         rate.sleep()
 
+def logging_stop(table_name):
+    log_stop_name = "/sqlite/stop_log"
+    try:
+        rospy.wait_for_service(log_stop_name, timeout=5)
+        rospy.ServiceProxy(log_stop_name, LoggingStop)(table_name)
+    except:
+        rospy.logwarn("Unable to stop logging service.")
+        return False
+    return True
+
+def logging_start(table_name):
+    log_start_name = "/sqlite/start_log"
+    topic_name = "/force_values"
+    header     = ["trial", "timestamp", "current", "force", "voltage"]
+
+    try:
+        if logging_stop(table_name):
+            rospy.wait_for_service(log_start_name, timeout=5)
+            resp = rospy.ServiceProxy(log_start_name, LoggingStart)(table_name, topic_name, header)
+            if resp.success:
+                return rospy.Publisher(topic_name, LoggingData, queue_size=100)
+    except:
+        pass
+
+    rospy.logwarn("Unable to start logging service.")
+    return None
+
+
+def take_sample(lj, mtr, msg, pub, test_name):
+    # Sample
+    timestamp = time.time()
+    current   = mtr.read_current()
+    volts     = voltage_sample(lj)
+    force     = v2N(volts)
+
+    # Record
+    msg.header.stamp = rospy.Time.now()
+    msg.header.seq  += 1
+    msg.test_name    = test_name
+    msg.data         = [timestamp, current, force, volts]
+
+    pub.publish(msg)
+
 #-------------------------------#
 #--           MAIN            --#
 #-------------------------------#
+
+parser = argparse.ArgumentParser(description="Pendulum Assembly Force Test")
+parser.add_argument('test_name', default="force_test")
+parser.add_argument('--min_amp', required=False, type=float, default=-1.0, help="Minimum amps")
+parser.add_argument('--max_amp', required=False, type=float, default=1.0, help="Maximum amps")
+parser.add_argument('--num_steps', required=False, type=int, default=5, help="Number of steps in amp")
+parser.add_argument('--num_cycles', required=False, type=int, default=20, help="How many cyles per amp")
+args = parser.parse_args()
 
 # Setup:
 rospy.init_node("force_test", anonymous=False)
@@ -107,17 +164,21 @@ mtr.enable_motor()
 lj = u6.U6() # LabJack with force sensor.
 lj.getCalibrationData()
 
+table_name = "MotorForceTest"
+pub = logging_start(table_name)
+if(pub == None):
+    sys.exit(0)
 
-# Weird bug I'm too lazy to figure out. First drive current command
+msg = LoggingData()
+
+# Weird behavior I'm too lazy to figure out. First drive current command
 # isn't be published correctly. So just publish an initial command
-# of zero that can be safely ignore.
+# of zero that can be safely ignored.
 mtr.drive_current(0.0)
 delay(2.0)
 
-NUM_CYCLES   = 30 # Number of times to test each current point
-results      = [] # Will fill with data points in format (Current, Force, Voltage)
-
-AMPS_TO_TEST = np.linspace(-0.8, 0.8, 4)
+NUM_CYCLES   = args.num_cycles # Number of times to test each current point
+AMPS_TO_TEST = np.linspace(args.min_amp, args.max_amp, args.num_steps)
 
 for i in range(NUM_CYCLES):
     for amp in AMPS_TO_TEST:
@@ -126,21 +187,20 @@ for i in range(NUM_CYCLES):
         mtr.drive_current(amp)
         delay(0.5)
 
-        current = mtr.read_current()
-        volts = voltage_sample(lj)
-        results.append((current, v2N(volts), volts))
+        # Take 2 samples just because
+        take_sample(lj, mtr, msg, pub, args.test_name)
         delay(0.1)
-        current = mtr.read_current()
-        volts = voltage_sample(lj)
-        results.append((current, v2N(volts), volts))
+        take_sample(lj, mtr, msg, pub, args.test_name)
 
         # Drive with 0 current to avoid constant motor on time.
         mtr.drive_current(0.0)
-        delay(0.9)
+        delay(0.8)
+
+    take_sample(lj, mtr, msg, pub, args.test_name)
+    delay(0.1)
 
 # Disable Motor
 mtr.disable_motor()
 
-# Save & Plot Results
-write_to_file(results)
-plot_results(results)
+# Stop Logging
+logging_stop(table_name)

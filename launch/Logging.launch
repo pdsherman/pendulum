@@ -1,0 +1,3 @@
+<launch>
+  <node name="sqlite" pkg="pendulum" type="sql_node" output="screen" />
+</launch>
