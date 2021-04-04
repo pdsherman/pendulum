@@ -6,13 +6,14 @@ Author: pdsherman
 Date:   March. 2021
 """
 
+import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
+
 import sys
 import time
 import math
-
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
+import sqlite3
 
 def linreg(x, y):
     xavg = np.mean(x)
@@ -32,53 +33,81 @@ def linreg(x, y):
 
     return ([a0, a1], r)
 
-def read_from_file():
-    filename = "/home/pdsherman/projects/pendulum/catkin_ws/src/pendulum/data/force_calibration/force_calibration_data_1.csv"
-    df = pd.read_csv(filename, sep=",", header=0)
-    return df
+def read_from_file(table_name, trial_name, filters = []):
 
-def plot_results(c1, f1, c2, f2):
-    plt.figure()
+    data = {"current": [], "force": []}
+    database = "/home/pdsherman/projects/pendulum/catkin_ws/src/pendulum/data/PendulumDatabase.db"
+    conn = sqlite3.connect(database)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
 
-    f1 = [x-12.5 for x in f1]
-    f2 = [x-12.5 for x in f2]
+    command  = "SELECT * FROM {}".format(table_name)
+    command += " where trial = \"{}\"".format(trial_name)
+    for f in filters:
+        command += f
+    command += " ORDER BY current"
 
-    # Plot Raw Results
-    plt.plot(c1, f1, "bo")
-    plt.plot(c2, f2, "bo")
+    c.execute(command)
+    for row in c:
+        data["current"].append(row["current"])
+        data["force"].append(row["force"])
 
-    # Linear fit with data (Include equation on plot)
-    for i in range(2):
-        if i == 0:
-            current = c1; force = f1
-            (a, r) = linreg(current, force)
-            c_r = np.linspace(min(current), 0.0)
-            f_r = [x*a[1] + a[0] for x in c_r]
-        elif i == 1:
-            current = c2; force = f2
-            (a, r) = linreg(current, force)
-            c_r = np.linspace(0.0, max(current))
-            f_r = [x*a[1] + a[0] for x in c_r]
+    return data
 
+def plot(x, y, x_max, x_min, lf):
+    plt.plot(x, y, lf)
 
-        plt.plot(c_r, f_r, 'r-')
+    a = np.polyfit(x, y, 1)
+    x_r = np.linspace(x_min, x_max)
+    y_r = [z*a[0] + a[1] for z in x_r]
 
-        eq = r'y={0:.3f}*x + {1:.3f}'.format(a[1], a[0])
-        plt.text(min(c_r)+0.4*(max(c_r)-min(c_r)), min(f_r)+(0.9)*(max(f_r)-min(f_r)), eq, fontsize='large', color='k')
+    eq = r'y={0:.5f}*x + {1:.5f}'.format(a[0], a[1])
+    plt.text(min(x_r)+0.2*(max(x_r)-min(x_r)), min(y_r)+0.9*(max(y_r)-min(y_r)), eq, fontsize='large', color='k')
 
-    # Miscellaneous plot formatting
-    plt.title("Motor Force Curve")
-    plt.xlabel("Current (Amps)")
-    plt.ylabel("Force (N)")
-    plt.subplots_adjust(left=0.1, right=0.97, top=0.9)
-    plt.grid()
-    plt.show()
+def force_to_current(x):
+    if x > 0.0:
+        return 0.0156 * x + 0.105
+    elif x < 0.0:
+        return 0.0156 * x - 0.105
+    else:
+        return 0.0
 
 #-------------------------------#
 #--           MAIN            --#
 #-------------------------------#
 
-df = read_from_file()
-sec1 = df[df["current"] < -0.35][df["current"] > -1.5]
-sec2 = df[df["current"] > 0.0]
-plot_results(sec1["current"].tolist(), sec1["force"].tolist(), sec2["current"].tolist(), sec2["force"].tolist())
+data1 = read_from_file("MotorForceTest", "trial2", [" AND current < -0.1"])
+data2 = read_from_file("MotorForceTest", "trial2", [" AND current > 0.1"])
+
+data = read_from_file("MotorForceTest", "trial3", [" AND current > -0.25", " AND current < 0.25"])
+data3 = {"current": [], "force": []}
+for (c, f) in zip(data["current"], data["force"]):
+    if not (abs(c) < 0.05 and f > 5):
+        data3["current"].append(c)
+        data3["force"].append(f)
+
+
+data = {}
+data["current"] = data1["current"] + data2["current"] + data3["current"]
+data["force"] = data1["force"] + data2["force"] + data3["force"]
+
+
+#matplotlib.rc('text', usetex=True) #use latex for text
+plt.figure()
+
+
+plt.plot(data3["force"], data3["current"], "bo")
+plt.plot(data1["force"], data1['current'], "bo")
+plt.plot(data2["force"], data2["current"], "bo")
+
+x_r = np.linspace(-100.0, 100.0, 250)
+y_r = [force_to_current(z) for z in x_r]
+plt.plot(x_r, y_r, "r-")
+
+plt.title("Motor Force Curve")
+plt.ylabel("Current (Amps)")
+plt.xlabel("Force (N)")
+
+plt.tight_layout()
+plt.grid()
+plt.show()
