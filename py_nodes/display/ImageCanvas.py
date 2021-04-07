@@ -27,7 +27,7 @@ class ImageCanvas(Canvas):
         # Collection of mass only objects to display
         self.masses = {}
 
-        # Names of all pendulums to display
+        # Names of all objects to display
         self.legend = {}
 
     def add_image(self, img_type, name, x0, theta0, base_fill, pend_fill):
@@ -62,14 +62,13 @@ class ImageCanvas(Canvas):
         return True
 
     def remove_image(self, name):
+        # Delete items from canvas first, then remove from dict
         if(self.pendulums.get(name) != None):
-            # Delete items from canvas first, then remove from dict
             self.delete(self.pendulums[name]["base_id"])
             self.delete(self.pendulums[name]["pend_id"])
             self.delete(self.pendulums[name]["circle_id"])
             del self.pendulums[name]
         elif(self.masses.get(name) != None):
-            # Delete items from canvas first, then remove from dict
             self.delete(self.masses[name]["base_id"])
             del self.masses[name]
         else:

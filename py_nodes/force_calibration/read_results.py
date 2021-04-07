@@ -54,16 +54,6 @@ def read_from_file(table_name, trial_name, filters = []):
 
     return data
 
-def plot(x, y, x_max, x_min, lf):
-    plt.plot(x, y, lf)
-
-    a = np.polyfit(x, y, 1)
-    x_r = np.linspace(x_min, x_max)
-    y_r = [z*a[0] + a[1] for z in x_r]
-
-    eq = r'y={0:.5f}*x + {1:.5f}'.format(a[0], a[1])
-    plt.text(min(x_r)+0.2*(max(x_r)-min(x_r)), min(y_r)+0.9*(max(y_r)-min(y_r)), eq, fontsize='large', color='k')
-
 def force_to_current(x):
     if x > 0.0:
         return 0.0156 * x + 0.105
@@ -86,15 +76,7 @@ for (c, f) in zip(data["current"], data["force"]):
         data3["current"].append(c)
         data3["force"].append(f)
 
-
-data = {}
-data["current"] = data1["current"] + data2["current"] + data3["current"]
-data["force"] = data1["force"] + data2["force"] + data3["force"]
-
-
-#matplotlib.rc('text', usetex=True) #use latex for text
 plt.figure()
-
 
 plt.plot(data3["force"], data3["current"], "bo")
 plt.plot(data1["force"], data1['current'], "bo")
