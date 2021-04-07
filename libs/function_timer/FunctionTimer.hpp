@@ -11,25 +11,54 @@
 
 namespace util {
 
+/// Class to for timing code.
+/// If user wants to time the average time a function takes to run,
+/// class can be used as follows
+///
+/// FunctionTimer tmr
+/// Loop:
+///    tmr.start
+///    ... Run code to time
+///    tmr.stop
+/// End Loop
+/// avg_time = tmr.average_us
 class FunctionTimer
 {
 public:
+
+  /// Constructor
   FunctionTimer(void);
 
+  /// Destructor
   ~FunctionTimer(void) = default;
 
+  /// Start timing
   void start(void);
 
+  /// Stop timing
   void stop(void);
 
-  double average_us(void) const;
-
+  /// Reset timer to clear all previously timed events to start over
   void reset(void);
 
+  /// Get the average time of all timed events since
+  /// object was contructed or last reset
+  /// @return Average time (micro-seconds) of all timed events
+  double average_us(void) const;
+
+  /// Get a copy of all the recorded times
+  /// @return Copy of vector containing times
+  std::vector<double> all_timed_events_us(void) const;
+
 private:
+
+  /// Saved times of events
   std::vector<double> _t;
 
+  /// Start time of event
   std::chrono::time_point<std::chrono::high_resolution_clock> _start;
+
+  /// Is timer currently timing an event
   bool _active;
 
 };

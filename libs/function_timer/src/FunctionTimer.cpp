@@ -24,14 +24,20 @@ void FunctionTimer::stop(void)
   }
 }
 
-double FunctionTimer::average_us(void) const
-{
-  return std::accumulate(_t.begin(), _t.end(), 0.0) / _t.size();
-}
-
 void FunctionTimer::reset(void)
 {
   _t.clear();
   _active = false;
 }
+
+double FunctionTimer::average_us(void) const
+{
+  return std::accumulate(_t.begin(), _t.end(), 0.0) / _t.size();
 }
+
+std::vector<double> FunctionTimer::all_timed_events_us(void) const
+{
+  return _t;
+}
+
+} // namespace util
