@@ -71,11 +71,11 @@ int main(int argc, char *argv[])
 
   pendulum::LoggingData row;
   int count = 0;
-  std::string trial = "trial1";
+  std::string trial = "trial3";
   std::vector<double> data({0.0, 0.0, 0.0, 0.0});
   while(ros::ok() && count < 100)
   {
-    if(count == 49) { trial = "trial2"; }
+    if(count == 49) { trial = "trial4"; }
     // First get all updates
     ros::spinOnce();
 

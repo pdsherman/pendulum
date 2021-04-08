@@ -10,10 +10,9 @@
 #pragma once
 
 #include <libs/logging/SqliteTable.hpp>
+#include <libs/threadsafe_queue/ThreadsafeQueue.hpp>
 
 #include <memory>
-#include <queue>
-#include <mutex>
 #include <thread>
 #include <atomic>
 
@@ -46,12 +45,15 @@ public:
   /// Get the current size of buffer
   size_t buffer_size(void);
 
-  /// Start-up a thread to begin removing data from
+  /// Start-up a thread to begin looping to removing data from
   /// buffer and inserting into the SQLite table
   bool logging_begin(void);
 
+  /// Ends the logging thread
   void logging_end(void);
 
+  /// Check if logging is currently active
+  /// @return True if active flag is true
   bool logging_is_active(void);
 
 private:
@@ -67,10 +69,7 @@ private:
   std::unique_ptr<SqliteTable> _table;
 
   /// Buffer object for data to be logged
-  std::queue<Row> _buffer;
-
-  /// Mutex for lokcing acces to buffer
-  std::mutex _buffer_mtx;
+  ThreadsafeQueue<Row> _buffer;
 
   /// Thread object to run logging function
   std::thread _logging_thread;
