@@ -29,7 +29,7 @@ public:
   /// Constructor
   FunctionTimer(void);
 
-  /// Destructor
+  /// Default Destructor
   ~FunctionTimer(void) = default;
 
   /// Start timing

@@ -25,14 +25,29 @@ double interpolate(const std::vector<double> &x, const std::vector<double> &y, c
   return 0.0;
 }
 
+std::vector<std::string> read_text_from_file(const std::string& filename)
+{
+  std::vector<std::string> text;
+  std::ifstream ifs;
+  ifs.open(filename, std::ifstream::in);
+
+  std::string line;
+  while(std::getline(ifs, line)) {
+    text.push_back(line);
+  }
+
+  ifs.close();
+  return text;
+}
+
 std::map<std::string, std::vector<double>> read_data_from_csv(const std::string& csv_file)
 {
-  std::ifstream ifs;
-  ifs.open(csv_file, std::ifstream::in);
+  // Read all lines fom file
+  std::vector<std::string> text = read_text_from_file(csv_file);
 
-  // Parse header to get column names
-  std::string header;
-  std::getline(ifs, header);
+  // Parse first line (i.e. the header) to get column names
+  std::string header = text[0];
+  text.erase(text.begin());
 
   std::vector<std::string> columns;
   boost::split(columns, header, boost::is_any_of(","));
@@ -42,8 +57,8 @@ std::map<std::string, std::vector<double>> read_data_from_csv(const std::string&
   for(size_t i = 0; i < columns.size(); ++i)
     raw_data.push_back(std::vector<double>());
 
-  std::string line;
-  while(std::getline(ifs, line)) {
+
+  for(auto &line : text) {
     std::vector<std::string> data_str;
     boost::algorithm::trim(line);
     boost::split(data_str, line, boost::is_any_of(","));
@@ -52,8 +67,6 @@ std::map<std::string, std::vector<double>> read_data_from_csv(const std::string&
       raw_data[i].push_back(std::stod(data_str[i]));
     }
   }
-
-  ifs.close();
 
   // Collect header and data in single container
   std::map<std::string, std::vector<double>> data;

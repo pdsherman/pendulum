@@ -26,6 +26,12 @@ namespace util {
 /// @return Interpolated value of f(x_n)
 double interpolate(const std::vector<double> &x, const std::vector<double> &y, const double x_n);
 
+
+/// Read all the lines from a file and insert into c++ container
+/// @param [in] filename Name of file to read
+/// @return Container filled with each line from file, in order read from file.
+std::vector<std::string> read_text_from_file(const std::string& filename);
+
 /// Parse a CSV file to a standard C++ data structure.
 /// @note Assumes all data is of type double.
 /// @param [in] csv_file Data file in csv format

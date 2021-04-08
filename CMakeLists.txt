@@ -9,10 +9,15 @@ add_compile_options(
   $<$<COMPILE_LANGUAGE:CXX>:-lsqlite3>
   -Wall
   -fPIC
+  -pthread
 )
 
 set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -latomic")
 
+# Find c++ threads library
+find_package( Threads )
+
+# Find ROS library
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
