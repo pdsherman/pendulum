@@ -11,7 +11,7 @@
 #include <pendulum/DrawSystem.h>
 #include <pendulum/LoggingStart.h>
 
-#include <devices/encoder/EncoderBoard.hpp>
+#include <hardware/encoder/EncoderBoard.hpp>
 
 #include <ros/ros.h>
 

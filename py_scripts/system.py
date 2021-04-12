@@ -11,7 +11,7 @@ import numpy as np
 class System:
     def __init__(self):
         # Parameters of system
-        self.M   = 5.5
+        self.M   = 0.61732
         self.b_b = 1.0
 
         self.m   = 2.7

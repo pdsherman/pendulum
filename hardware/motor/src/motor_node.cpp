@@ -1,6 +1,6 @@
 
 
-#include <devices/motor/RosMotor.hpp>
+#include <hardware/motor/RosMotor.hpp>
 
 int main(int argc, char *argv[])
 {

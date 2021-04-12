@@ -54,6 +54,7 @@ add_service_files( DIRECTORY ${PROJECT_SOURCE_DIR}/srv
   GraphData.srv
   MotorDriveMode.srv
   MotorControlGains.srv
+  HardwareTest.srv
 )
 
 generate_messages( DEPENDENCIES std_msgs )
@@ -95,7 +96,7 @@ find_package(
 
 add_subdirectory( tests )
 # add_subdirectory( control )
-add_subdirectory( devices )
+add_subdirectory( hardware )
 add_subdirectory( plant )
 add_subdirectory( libs )
 add_subdirectory( external_libs )

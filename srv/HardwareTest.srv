@@ -1,0 +1,6 @@
+string test_name
+float64 input
+float64 on_time
+float64 total_time
+---
+bool success

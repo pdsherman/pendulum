@@ -2,7 +2,7 @@
  * See header file for description
  */
 
-#include <devices/motor/RosMotor.hpp>
+#include <hardware/motor/RosMotor.hpp>
 
 #include <boost/function.hpp>
 
