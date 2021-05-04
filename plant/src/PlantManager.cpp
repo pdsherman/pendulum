@@ -1,6 +1,6 @@
 
 #include <plant/PlantManager.hpp>
-#include <plant/Model.hpp>
+#include <plant/PendulumModel.hpp>
 #include <plant/SimplePendulum.hpp>
 
 PlantManager::PlantManager(
@@ -25,7 +25,7 @@ PlantManager::PlantManager(
     break;
   case Type::Full:
   default:
-    _plant = Model::create({x0.x, x0.x_dot, x0.theta, x0.theta_dot});
+    _plant = PendulumModel::create({x0.x, x0.x_dot, x0.theta, x0.theta_dot});
     break;
   }
 

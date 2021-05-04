@@ -1,6 +1,6 @@
 
 #include <libs/util/util.hpp>
-#include <libs/function_timer/FunctionTimer.hpp>
+#include <libs/util/FunctionTimer.hpp>
 
 #include <array>
 #include <cmath>

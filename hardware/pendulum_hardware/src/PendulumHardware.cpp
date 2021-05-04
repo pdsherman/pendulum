@@ -67,7 +67,7 @@ PendulumHardware::Positions PendulumHardware::positions_read(void)
 
   Positions pos({
     .pendulum_theta = readings[1],
-    .position_x     = readings[0] * kPullyRadius_mm
+    .position_x     = (readings[0] * kPullyRadius_mm)/1000.0
   });
   return pos;
 }

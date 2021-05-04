@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <control/ControlBase.hpp>
+#include <libs/control/ControlBase.hpp>
 
 class PID : public ControlBase<double, double>
 {

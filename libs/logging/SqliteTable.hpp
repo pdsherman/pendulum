@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <libs/function_timer/FunctionTimer.hpp>
+#include <libs/util/FunctionTimer.hpp>
 
 #include <sqlite3.h>
 

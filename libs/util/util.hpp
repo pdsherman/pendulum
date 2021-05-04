@@ -60,6 +60,22 @@ std::array<T, N> add_arrays(const std::array<T, N> &a, const std::array<T, N> &b
   return c;
 }
 
+/// Convenience function to get string representation of string.
+/// @param [in] a First array
+/// @return Value of array addition
+template <typename T, int N>
+std::string array_to_string(const std::array<T, N> &a)
+{
+  std::stringstream stream;
+  stream << "{";
+  for(size_t ii = 0; ii < N; ++ii) {
+    stream << std::to_string(a[ii]);
+    if(ii != N - 1) { stream << ", "; }
+  }
+  stream << "}";
+  return stream.str();
+}
+
 /// Cast an enum to its underlying type.
 /// @param [in] e The enumerated value to cast.
 /// @return e, cast to its underlying type.

@@ -11,7 +11,7 @@
 
 namespace util {
 
-/// Class to for timing code.
+/// Class for timing code.
 /// If user wants to time the average time a function takes to run,
 /// class can be used as follows
 ///
@@ -32,13 +32,13 @@ public:
   /// Default Destructor
   ~FunctionTimer(void) = default;
 
-  /// Start timing
+  /// Start timing an event
   void start(void);
 
-  /// Stop timing
+  /// Stop timing and save time for event
   void stop(void);
 
-  /// Reset timer to clear all previously timed events to start over
+  /// Reset to clear all previously timed events to start over
   void reset(void);
 
   /// Get the average time of all timed events since

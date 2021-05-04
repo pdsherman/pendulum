@@ -119,7 +119,7 @@ bool logging_stop_cb(pendulum::LoggingStop::Request &req, pendulum::LoggingStop:
     data_handler.logging_end();
     while(data_handler.logging_is_active()) { ros::Duration(0.2).sleep(); }
   }
-  ROS_INFO("Logging Stopped.");
+  ROS_INFO("SQLite logging stopped.");
   return true;
 }
 

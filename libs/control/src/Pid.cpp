@@ -1,5 +1,5 @@
 
-#include <control/Pid.hpp>
+#include <libs/control/Pid.hpp>
 
 PID::PID(const double delta_t, const double Kp, const double Ki, const double Kd, const double target)
   : _Kp(Kp), _Ki(Ki), _Kd(Kd),

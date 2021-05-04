@@ -1,5 +1,5 @@
 /*
- * File:    Model.hpp
+ * File:    PendulumModel.hpp
  * Author:  pdsherman
  * Date:    Aug. 2020
  *
@@ -13,31 +13,28 @@
 #include <array>
 #include <memory>
 
-class Model : public Plant<4>
+class PendulumModel : public Plant<4>
 {
 public:
-  using State = Plant<4>::State;
-
-  static std::shared_ptr<Plant<4>> create(const State &x0);
+  using X_t = Plant<4>::X_t;
 
   /// Constructor
-  /// @param x0 initial state
-  Model(const State &x0);
+  /// @param x0 initial state [x, x_dot, theta, theta_dot]
+  static std::shared_ptr<Plant<4>> create(const X_t &x0);
+
+  /// Constructor
+  /// @param x0 initial state [x, x_dot, theta, theta_dot]
+  PendulumModel(const X_t &x0);
 
   /// Destructor
-  ~Model(void) = default;
-
-  /// Simulate system one timestep in future
-  /// @param u Control during time step
-  /// @param dt Time-step to simulate
-  State update(const double u, const double dt) override;
+  ~PendulumModel(void) = default;
 
 private:
 
   /// Calculate the state-variable derivative
   /// @param [in] x Current value of state variable
   /// @param [in] u Value of control variable
-  State calculate_x_dot(const State &x, const double u) const;
+  X_t calculate_x_dot(const X_t &x, const double u) const;
 
   // *********************** //
   //   Simulation Constants  //

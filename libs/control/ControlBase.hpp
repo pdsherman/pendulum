@@ -24,7 +24,7 @@ public:
   /// Update method for control loop
   /// @param [in] x Current state of the robot
   /// @return Updated value for control
-  virtual U update(const X &x){};
+  virtual U update(const X &x){ return U(); };
 
   /// Getter method for control
   /// @return Control value u

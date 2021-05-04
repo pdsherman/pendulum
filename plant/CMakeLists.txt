@@ -2,8 +2,10 @@
 
 add_library( pendulum_model
   src/PlantManager.cpp
-  src/Model.cpp
-  src/SimplePendulum.cpp)
+  src/PendulumModel.cpp
+  src/SimplePendulum.cpp
+  src/BaseObject.cpp
+)
 target_link_libraries( pendulum_model
   util
   ${catkin_LIBRARIES} )
