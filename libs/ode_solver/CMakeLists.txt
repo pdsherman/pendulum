@@ -1,1 +1,2 @@
-# Nothing needed here for template class
+
+add_subdirectory(test)

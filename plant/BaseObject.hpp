@@ -34,9 +34,9 @@ private:
   /// @param [in] u Value of control variable
   X_t calculate_x_dot(const X_t &x, const double u) const;
 
-  // *********************** //
-  //   Simulation Constants  //
-  // *********************** //
+  // *************************** //
+  // **    Model Constants    ** //
+  // *************************** //
 
   static constexpr double M   = 0.617;
   static constexpr double b_b = 40.1;

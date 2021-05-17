@@ -52,5 +52,4 @@ protected:
   /// Numerical solver for second order differetial solver
   ///   X''=f(x, x', u)
   RungaKutta<N> _solver;
-
 };

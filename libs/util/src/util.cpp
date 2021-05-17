@@ -57,7 +57,6 @@ std::map<std::string, std::vector<double>> read_data_from_csv(const std::string&
   for(size_t i = 0; i < columns.size(); ++i)
     raw_data.push_back(std::vector<double>());
 
-
   for(auto &line : text) {
     std::vector<std::string> data_str;
     boost::algorithm::trim(line);
@@ -68,7 +67,7 @@ std::map<std::string, std::vector<double>> read_data_from_csv(const std::string&
     }
   }
 
-  // Collect header and data in single container
+  // Combine header and data in single container
   std::map<std::string, std::vector<double>> data;
   for(size_t i = 0; i < columns.size(); ++i) {
     boost::algorithm::trim(columns[i]);

@@ -10,22 +10,19 @@
 #include <chrono>
 
 namespace util {
-
-/// Class for timing code.
-/// If user wants to time the average time a function takes to run,
-/// class can be used as follows
+/// Class for timing a re-occurring event such as a function being.
+/// being called during a loop. Class can be used as follows
 ///
 /// FunctionTimer tmr
 /// Loop:
-///    tmr.start
+///    tmr.start()
 ///    ... Run code to time
-///    tmr.stop
+///    tmr.stop()
 /// End Loop
-/// avg_time = tmr.average_us
+/// avg_time = tmr.average_us()
 class FunctionTimer
 {
 public:
-
   /// Constructor
   FunctionTimer(void);
 
@@ -60,7 +57,5 @@ private:
 
   /// Is timer currently timing an event
   bool _active;
-
 };
-
-}
+} //namespace util

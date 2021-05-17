@@ -33,8 +33,9 @@ double interpolate(const std::vector<double> &x, const std::vector<double> &y, c
 std::vector<std::string> read_text_from_file(const std::string& filename);
 
 /// Parse a CSV file to a standard C++ data structure.
-/// @note Assumes all data is of type double.
-/// @param [in] csv_file Data file in csv format
+/// @note Assumes the first line of data contains header of column names
+/// @note Assumes all data cand be converted to type double.
+/// @param [in] csv_file Filename for csv formated file of data
 /// @return Map with key as column header and data as value
 std::map<std::string, std::vector<double>> read_data_from_csv(const std::string& csv_file);
 
@@ -47,7 +48,7 @@ void write_data_to_csv(const std::string &csv_file, std::map<std::string, std::v
 /// constants for speed_t are not themselves portable.
 int speed_to_baud(speed_t speed);
 
-/// Convenience function to add two arrays.
+/// Convenience function element-wise array addition.
 /// @param [in] a First array
 /// @param [in] b Second array
 /// @return Value of array addition
@@ -60,7 +61,7 @@ std::array<T, N> add_arrays(const std::array<T, N> &a, const std::array<T, N> &b
   return c;
 }
 
-/// Convenience function to get string representation of string.
+/// Convenience function to get string representation of array.
 /// @param [in] a First array
 /// @return Value of array addition
 template <typename T, int N>

@@ -44,8 +44,8 @@ private:
   static constexpr double M   = 5.5;
   static constexpr double m   = 2.7;
   static constexpr double b_b = 0.5;
-  static constexpr double I   = 0.00474;
-  static constexpr double b_p = 0.00061;
+  static constexpr double I   = 0.0105;
+  static constexpr double b_p = 0.00078;
 
   static constexpr double g = 9.80665;  //< Acceleration from gravity (m/s^2)
 

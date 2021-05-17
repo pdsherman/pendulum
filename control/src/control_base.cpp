@@ -14,80 +14,125 @@
 #include <pendulum/State.h>
 #include <pendulum/Control.h>
 
-#include <plant/Plant.hpp>
-#include <plant/PendulumModel.hpp>
 #include <plant/BaseObject.hpp>
-#include <libs/ode_solver/RungaKutta.hpp>
 
 #include <ros/ros.h>
 #include <iostream>
 #include <thread>   // For this_thread::sleep_until
 #include <chrono>
-#include <functional>
 
-using X_t = PendulumModel::X_t;
+static constexpr double kRunTime_s    = 5.0;
+static constexpr double kMaxInput_N   = 25.0;
+static constexpr double kOnTime_s     = 0.5;
+static constexpr int kCycleTime_ns = 10000;
 
-X_t calc(const X_t &x, const double u)
-{
-  static constexpr double l   = 0.5;
-  static constexpr double M   = 5.5;
-  static constexpr double m   = 2.7;
-  static constexpr double b_b = 0.5;
-  static constexpr double I   = 0.00474;
-  static constexpr double b_p = 0.00061;
-  static constexpr double g   = 9.80665;  //< Acceleration from gravity (m/s^2)
+std::vector<double> create_command_vector(double input, double on_time, double total_time);
 
-  static constexpr double d = M + m;
-  static constexpr double k = m*l;
-  static constexpr double w = b_p/l;
-  static constexpr double z = (m*l) + (I/l);
+bool start_logging(ros::NodeHandle &nh,
+                  const std::string &table,
+                  const std::string &topic,
+                  const std::vector<std::string> &headers);
 
-  const double c2 = cos(x[2]);
-  const double s2 = sin(x[2]);
-  const double s2_sqr = pow(s2, 2.0);
+void stop_logging(ros::NodeHandle &nh, const std::string &table);
 
-  X_t x_dot;
-
-  // x-dot
-  x_dot[0] = x[1];
-
-  // x-double-dot
-  const double n1 = z / (d*z - m*k*s2_sqr);
-  const double n2 = (2.0*k + z) / z;
-  x_dot[1] = n1*(-b_b*x[1] + k*c2*pow(x[3], 2.0) - n2*w*s2*x[3] - m*k*g*sin(2*x[2])/(2*z) + u);
-
-  // theta-dot
-  x_dot[2] = x[3];
-
-  // theta-double-dot
-  const double n3 = m / (d*z - m*k*s2_sqr);
-  const double n4 = 0.5*k*sin(2.0*x[2]);
-  const double n5 = (2.0*d + m*s2_sqr) / m;
-  x_dot[3] = n3*(-b_b*s2*x[1] + n4*pow(x[3], 2.0) - n5*w*x[3] - d*g*c2 + s2*u);
-
-  return x_dot;
-}
 
 int main(int argc, char *argv[])
 {
+  ros::init(argc, argv, "base_control");
+  ros::NodeHandle nh;
+
+  // ---   Start Logging   --- //
+  std::string table = "BaseModelTest";
+  std::string topic = "/base_model";
+  std::vector<std::string> header({
+    "test", "test_time", "input", "x", "x_dot"
+  });
+
+  ros::Publisher pub = nh.advertise<pendulum::LoggingData>(topic, 50);
+  if(!start_logging(nh, table, topic, header)) {
+    ROS_ERROR("Failed to start logging.");
+    return 0;
+  }
+
+  // Experimentally found that some delay is needed after starting
+  // logging before you can start publishing data
+  usleep(300000);
 
 
-//  ros::init(argc, argv, "base_control");
-//  ros::NodeHandle nh;
+  // ---   Run Hardware Test   --- //
 
+  BaseObject::X_t x{0.0, -0.5};
+  std::shared_ptr<Plant<2>> plant = BaseObject::create(x);
+  std::vector<double> cmd = create_command_vector(kMaxInput_N, kOnTime_s, kRunTime_s);
+  int c = 0;
+  double t = 0.0;
   double dt = 0.05;
-  double u  = 10.0;
-  PendulumModel::X_t x0{0.1, -0.5, 2.3, 5.0};
+  double u = 0.0;
+  while(t < kRunTime_s) {
+    // TODO: Run an inner loop at a faster rate than rate updating command
 
-  PendulumModel m(x0);
+    // Update plant
+    u = cmd[c];
+    x = plant->update(u, dt);
 
-  std::function<X_t(const X_t&, const double)> f = &calc;
-  RungaKutta<4> rk(std::move(f));
+    // Publish
 
-  X_t x_1 = rk.step(x0, u, dt);
-  X_t x_2 = m.update(u, dt);
-  std::cout << "1: " << util::array_to_string<double, 4>(x_1) << std::endl;
-  std::cout << "2: " << util::array_to_string<double, 4>(x_2) << std::endl;
+
+    t += dt;
+    c += 1;
+  }
 
   return 0;
+}
+
+std::vector<double> create_command_vector(double input, double on_time, double total_time)
+{
+  static constexpr double offset = 0.5;
+  std::vector<double> vec;
+
+  double t  = 0.0;
+  double dt = (kCycleTime_ns/1e9);
+  int size = total_time / dt;
+  vec.resize(size, 0.0);
+
+  for(size_t i = 0; i < vec.size(); ++i) {
+    if(t > offset && t <= on_time + offset) { vec[i] = input; }
+    t += dt;
+  }
+
+  return vec;
+}
+
+
+bool start_logging(ros::NodeHandle &nh,
+                  const std::string &table,
+                  const std::string &topic,
+                  const std::vector<std::string> &header)
+{
+  // Request logging node to start logging
+  ros::ServiceClient sql_client = nh.serviceClient<pendulum::LoggingStart>("/sqlite/start_log");
+  if(sql_client.exists()) {
+    pendulum::LoggingStart start_log;
+    start_log.request.table_name = table;
+    start_log.request.topic_name = topic;
+    start_log.request.header     = header;
+
+    return sql_client.call(start_log) && start_log.response.success;
+  } else {
+    ROS_WARN("Start logging server unreachable.");
+  }
+
+  return false;
+}
+
+void stop_logging(ros::NodeHandle &nh, const std::string &table)
+{
+  ros::ServiceClient sql_client = nh.serviceClient<pendulum::LoggingStop>("/sqlite/stop_log");
+  if(sql_client.exists()) {
+    pendulum::LoggingStop start_log;
+    start_log.request.table_name = table;
+    sql_client.call(start_log);
+  } else {
+    ROS_WARN("Stop logging server unreachable.");
+  }
 }

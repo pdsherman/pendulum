@@ -41,10 +41,10 @@ private:
   X_t calculate_x_dot(const X_t &x, const double u) const;
 
   ///< Rotational friction of pendulum (kg-m^2/s)
-  double _b;
+  double _b; // = 0.00078
 
   //< Moment of Inertia (kg-m^2)
-  double _I; // = 0.01978;
+  double _I; // = 0.0105;
 
   // *********************** //
   //   Simulation Constants  //
