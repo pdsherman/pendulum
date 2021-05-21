@@ -46,7 +46,7 @@ class ImageCanvas(Canvas):
                         "pendulum":pendulum}
         elif(img_type == "mass_only"):
             # Add mass object
-            mass = BaseImage(x0, name)
+            mass = MassOnlyImage(x0, name)
             base_id = self.create_polygon(mass.get_base_points(), fill=base_fill)
             self.masses[name] = {"base_id":base_id, "mass":mass}
         else:

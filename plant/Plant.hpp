@@ -23,7 +23,7 @@ public:
   /// @param [in] f  Function to define different equation of plant
   Plant(const X_t &x0, std::function<X_t(const X_t&, const double)> &&f)
     : _x(x0),
-      _solver(std::move(f))
+      _solver(std::move(f), RungaKutta<N>::SolverType::kFourthOrderOptimal)
   {
   }
 
@@ -49,7 +49,7 @@ protected:
   /// Current value of state evariables
   X_t _x;
 
-  /// Numerical solver for second order differetial solver
-  ///   X''=f(x, x', u)
+  /// Numerical solver for second order differetial system of equations
+  ///   x'' = f(x, x', u)
   RungaKutta<N> _solver;
 };

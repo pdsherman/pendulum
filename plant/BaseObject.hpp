@@ -10,7 +10,6 @@
 
 #include <plant/Plant.hpp>
 
-#include <array>
 #include <memory>
 
 class BaseObject : public Plant<2>

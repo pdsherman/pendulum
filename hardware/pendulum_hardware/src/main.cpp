@@ -7,12 +7,11 @@
  *          and other nodes. This runs on RaspberryPi connected to encoder reading board.
  */
 
-#include <pendulum/LoggingStart.h>
-#include <pendulum/LoggingStop.h>
 #include <pendulum/LoggingData.h>
 
 #include <hardware/pendulum_hardware/PendulumHardware.hpp>
 #include <libs/util/FunctionTimer.hpp>
+#include <libs/util/ros_util.hpp>
 
 #include <iostream>
 #include <thread>   // For this_thread::sleep_until
@@ -24,15 +23,7 @@ static std::vector<double> u_cmd;
 static std::string test_name;
 static const int cycle_time_ns = 1800000; // Target of 1.8 ms per cycle
 
-
 void hardware_test(ros::NodeHandle &nh, PendulumHardware &hw);
-
-bool start_logging(ros::NodeHandle &nh,
-                  const std::string &table,
-                  const std::string &topic,
-                  const std::vector<std::string> &headers);
-
-void stop_logging(ros::NodeHandle &nh, const std::string &table);
 
 void create_command_vector(double input, double on_time, double total_time);
 
@@ -80,14 +71,10 @@ void hardware_test(ros::NodeHandle &nh, PendulumHardware &hw)
   });
 
   ros::Publisher pub = nh.advertise<pendulum::LoggingData>(topic, 50);
-  if(!start_logging(nh, table, topic, header)) {
+  if(!util::start_logging(nh, table, topic, header)) {
     ROS_ERROR("Failed to start logging.");
     return;
   }
-
-  // Experimentally found that some delay is needed after starting
-  // logging before you can start publishing data
-  usleep(300000);
 
   // ---   Run Hardware Test   --- //
 
@@ -127,40 +114,7 @@ void hardware_test(ros::NodeHandle &nh, PendulumHardware &hw)
   hw.motor_disable();
 
   // ---   Stop Logging   --- //
-  stop_logging(nh, table);
-}
-
-bool start_logging(ros::NodeHandle &nh,
-                  const std::string &table,
-                  const std::string &topic,
-                  const std::vector<std::string> &header)
-{
-  // Request logging node to start logging
-  ros::ServiceClient sql_client = nh.serviceClient<pendulum::LoggingStart>("/sqlite/start_log");
-  if(sql_client.exists()) {
-    pendulum::LoggingStart start_log;
-    start_log.request.table_name = table;
-    start_log.request.topic_name = topic;
-    start_log.request.header     = header;
-
-    return sql_client.call(start_log) && start_log.response.success;
-  } else {
-    ROS_WARN("Start logging server unreachable.");
-  }
-
-  return false;
-}
-
-void stop_logging(ros::NodeHandle &nh, const std::string &table)
-{
-  ros::ServiceClient sql_client = nh.serviceClient<pendulum::LoggingStop>("/sqlite/stop_log");
-  if(sql_client.exists()) {
-    pendulum::LoggingStop start_log;
-    start_log.request.table_name = table;
-    sql_client.call(start_log);
-  } else {
-    ROS_WARN("Stop logging server unreachable.");
-  }
+  util::stop_logging(nh, table);
 }
 
 void create_command_vector(double input, double on_time, double total_time)

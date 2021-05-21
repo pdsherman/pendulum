@@ -43,7 +43,6 @@ bool start_logging(ros::NodeHandle &nh, const std::string &name, const std::stri
   return false;
 }
 
-
 int main(int argc, char *argv[])
 {
   ros::init(argc, argv, "log_client_test");

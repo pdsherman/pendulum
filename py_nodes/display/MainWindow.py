@@ -47,8 +47,17 @@ class MainWindow:
         rospy.Service('/gui/delete_system', DeleteSystem, self.remove_pendulum)
 
     def update(self):
+        self.check_service_calls()
+
+        # Update Image
+        self.img.update_drawing()
+        # https://stackoverflow.com/questions/29158220/tkinter-understanding-mainloop
+        self.root.update_idletasks()
+        self.root.update()
+
+    def check_service_calls(self):
         self.lock.acquire()
-        try:
+        if len(self.service_queue) > 0:
             r = self.service_queue.pop(0)
             if(r[0] == "add"):
                 if r[1].img_type == DrawSystemRequest.PENDULUM:
@@ -59,15 +68,7 @@ class MainWindow:
                         r[1].name, r[1].x, None, r[1].base_color, None)
             elif r[0] == "remove":
                 self.img.remove_image(r[1].name)
-        except IndexError:
-            pass
         self.lock.release()
-
-        # Update Image
-        self.img.update_drawing()
-        # https://stackoverflow.com/questions/29158220/tkinter-understanding-mainloop
-        self.root.update_idletasks()
-        self.root.update()
 
     def create_new_pendulum(self, req):
         self.lock.acquire()

@@ -31,7 +31,7 @@ bool SqliteTable::open_database(const std::string &database_file)
   int r = sqlite3_open_v2(full_path.c_str(), &db_local, flags, nullptr);
 
   if(r == SQLITE_OK){
-    // PRAGMA's Improve insertion times by ~99%. Sacfricing robustness
+    // PRAGMA's Improve insertion times by ~99% by sacrficing robustness.
     // Okay for personal project like this where its not a big deal
     // if database is corrupted and is lost.
     sqlite3_exec(db_local, "PRAGMA synchronous = OFF", NULL, NULL, NULL);
@@ -50,10 +50,10 @@ bool SqliteTable::create_table(const std::vector<std::string> &columns) {
 
   std::string cmd = "CREATE TABLE IF NOT EXISTS " + _table_name + " (";
   cmd += columns[0] + " STRING, ";
-  for(size_t i = 1; i < columns.size(); ++i)
-    cmd += columns[i] + " REAL, ";
-  cmd.pop_back();
-  cmd.pop_back();
+  for(size_t i = 1; i < columns.size(); ++i) {
+    cmd += columns[i] + " REAL";
+    if (i != columns.size()-1) { cmd += ", "; }
+  }
   cmd += ")";
 
   sqlite3_stmt *st = nullptr;
@@ -78,10 +78,9 @@ bool SqliteTable::creat_insert_stmt(const std::vector<std::string> &columns)
   cmd.pop_back();
   cmd += ") VALUES (";
   for(size_t i = 0; i < columns.size(); ++i) {
-    cmd += ":x" + std::to_string(i) + ", ";
+    cmd += ":x" + std::to_string(i);
+    if (i != columns.size()-1) { cmd += ", "; }
   }
-  cmd.pop_back();
-  cmd.pop_back();
   cmd += ")";
 
   sqlite3_stmt* stmt;
@@ -108,7 +107,7 @@ bool SqliteTable::delete_table(void)
 
   _table_exists = false;
   _insert_stmt = nullptr;
-  
+
   sqlite3_step(st);
   sqlite3_finalize(st);
   return true;

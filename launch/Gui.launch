@@ -1,5 +1,4 @@
 <launch>
-  <node name="gui" pkg="pendulum" type="gui.py" />
-  <!-- <node name="sqlite" pkg="pendulum" type="sql_node" output="screen" />
-  <node name="grapher" pkg="pendulum" type="plot_sensor_data.py" output="screen" /> -->
+  <node name="gui" pkg="pendulum" type="gui.py" output="screen" />
+  <node name="sqlite" pkg="pendulum" type="sql_node" output="screen" />
 </launch>

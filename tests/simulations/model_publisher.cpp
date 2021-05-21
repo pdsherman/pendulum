@@ -11,7 +11,7 @@
 
 #include <pendulum/State.h>
 #include <pendulum/DrawSystem.h>
-#include <pendulum/RemovePendulum.h>
+#include <pendulum/DeleteSystem.h>
 #include <pendulum/GraphData.h>
 #include <pendulum/LoggingStart.h>
 #include <pendulum/LoggingDropTable.h>
@@ -28,9 +28,6 @@
 
 /// Request GUI node to display the pendulum
 static bool display(ros::NodeHandle &nh, const std::string &name, const pendulum::State &x0);
-
-/// Call logging node to subscribe to topic and being logging data
-static bool start_logging(ros::NodeHandle &nh, const std::string &name, const std::string &log_table_name);
 
 /// Plot results logged in table
 static void plot_test_data(ros::NodeHandle &nh, const std::string &log_table_name);
@@ -65,10 +62,6 @@ int main(int argc, char *argv[])
   x_target.theta_dot   = 0.0;
 
   std::string name = "Simulated";
-
-  // Activate logging to database
-  logging_active = start_logging(nh, name, log_table_name);
-  ros::Duration(0.1).sleep();
 
   // Attempt to Add pendulum to gui. Exit if servicer server doesn't start up in time.
   if(!display(nh, name, x0)) {
@@ -180,29 +173,6 @@ bool display(ros::NodeHandle &nh, const std::string &name, const pendulum::State
   add_srv.request.img_type = pendulum::DrawSystemRequest::PENDULUM;
 
   return client.call(add_srv);
-}
-
-bool start_logging(ros::NodeHandle &nh, const std::string &name, const std::string &log_table_name)
-{
-  ros::ServiceClient sql_client = nh.serviceClient<pendulum::LoggingDropTable>("/sqlite/drop_table");
-  if(sql_client.exists()) {
-    pendulum::LoggingDropTable drop_table;
-    drop_table.request.table_name = log_table_name;
-
-    sql_client.call(drop_table);
-    if(!drop_table.response.success)
-      ROS_WARN("Failure to drop table");
-  }
-
-  sql_client = nh.serviceClient<pendulum::LoggingStart>("/sqlite/start_log");
-  if(sql_client.exists()) {
-    pendulum::LoggingStart start_log;
-    start_log.request.table_name = log_table_name;
-    start_log.request.topic_name = name;
-
-    return sql_client.call(start_log) && start_log.response.success;
-  }
-  return false;
 }
 
 void plot_test_data(ros::NodeHandle &nh, const std::string &log_table_name)

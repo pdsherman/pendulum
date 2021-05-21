@@ -87,6 +87,7 @@ bool logging_start_func(
   ros::NodeHandle &nh,
   ros::Subscriber &subscriber)
 {
+  
   if(!data_handler.logging_is_active()) {
     std::unique_ptr<SqliteTable> table = std::unique_ptr<SqliteTable>(new SqliteTable(req.table_name));
     if(table->open_database(db_filename) && table->create_table(req.header)){

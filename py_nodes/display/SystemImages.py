@@ -59,14 +59,14 @@ class BaseImage:
         return [tr_x, tr_y, br_x, br_y, bl_x, bl_y, tl_x, tl_y]
 
 
-class MassOnlyImage(SystemImage):
+class MassOnlyImage(BaseImage):
     def __init__(self, x0, name):
-        SystemImage.__init__(self, x0, 0.0, name)
+        BaseImage.__init__(self, x0, 0.0, name)
 
     def get_base_points(self):
         return self.get_points([self.x, self.base_y], self.base_width, self.base_height)
 
-class PendulumImage(SystemImage):
+class PendulumImage(BaseImage):
     def __init__(self, x0, theta0, name):
         SystemImage.__init__(self, x0, theta0, name)
 

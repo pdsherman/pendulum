@@ -51,11 +51,6 @@ int main(int argc, char *argv[])
   gui_srv.request.img_type = pendulum::DrawSystemRequest::PENDULUM;
   gui_client.call(gui_srv);
 
-  // TODO: Remove and place in better position eventually
-  //pendulum::LoggingStart log_srv;
-  //log_srv.request.topic_name = gui_srv.request.name;
-  //log_srv.request.table_name = "TestTable";
-  //logging_client.call(log_srv);
 
   // State publishing object
   ros::Publisher pub = nh.advertise<pendulum::State>(gui_srv.request.name, 10);
