@@ -16,6 +16,11 @@
 
 namespace util {
 
+/// Repeatedly check for if the target service exists.
+/// Timeout after after 5 seconds.
+/// @return True if service exists before timeout
+bool service_exists_timeout(ros::ServiceClient &client);
+
 /// Attempt to call the logging node service to
 /// begin subscribing to a topic and log data
 /// to SQLite database.

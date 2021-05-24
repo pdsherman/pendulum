@@ -1,0 +1,5 @@
+<launch>
+  <node name="gui" pkg="pendulum" type="gui.py" output="screen" />
+  <node name="sqlite" pkg="pendulum" type="sql_node" output="screen" />
+  <node name="control_base_sim" pkg="pendulum" type="control_base_sim" output="screen" />
+</launch>

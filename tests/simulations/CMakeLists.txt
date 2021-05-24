@@ -1,10 +1,12 @@
 
-# Physics-based simulation
-add_executable( simulation
-  model_publisher.cpp )
-target_link_libraries( simulation
+
+add_executable( control_base_sim
+  control_base_sim.cpp )
+target_link_libraries( control_base_sim
+  control
   pendulum_model
+  util
   ${catkin_LIBRARIES} )
 
-add_dependencies( simulation ${PROJECT_NAME}_generate_messages )
-install(TARGETS simulation RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION} )
+add_dependencies( control_base_sim ${PROJECT_NAME}_generate_messages )
+install(TARGETS control_base_sim RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION} )

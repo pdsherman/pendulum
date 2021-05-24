@@ -10,12 +10,9 @@
 
 #include <external_libs/motor/Motor.hpp>
 #include <hardware/encoder/EncoderBoard.hpp>
-#include <pendulum/Control.h>
 
 #include <ros/ros.h>
-
 #include <future>
-
 
 class PendulumHardware
 {
@@ -29,7 +26,7 @@ struct Positions {
 };
 
 // Constructor
-PendulumHardware(const ros::NodeHandle &nh);
+PendulumHardware(void);
 
 // Destructor
 ~PendulumHardware(void) = default;
@@ -41,7 +38,6 @@ bool initialize(void);
 /// Run cycle of the pendulum hardware
 ///  - Command motor
 ///  - Read positions
-///  - Publish data
 /// @param [in] input_N Desired input force in Newtons
 Positions update(const double input_N);
 
@@ -83,21 +79,19 @@ private:
 /// @return Required motor current (Amps)
 double force_to_current(const double force) const;
 
-// ----  ROS member variables  ---- //
-
-/// ROS node handle object
-ros::NodeHandle _nh;
-
-/// Publisher for measured positions
-ros::Publisher _pub_position;
-
-/// Value to publish
-pendulum::Control _msg;
-
-// ----      Concurrency      ---- //
+// ----  Member Variables  ---- //
 
 /// Future object for asynchronos read of encoder
 std::future<Positions> _pos_fut;
+
+/// Horizontal position of hardware base
+double _x;
+
+/// Angular position of pendulum
+double _theta;
+
+/// Input force commanded by motor
+double _input;
 
 // ----  Physical Hardware    ---- //
 

@@ -3,19 +3,15 @@
  */
 
 #include <hardware/pendulum_hardware/PendulumHardware.hpp>
-
 #include <external_libs/motor/MotorException.hpp>
 
 const std::string PendulumHardware::kEncoderBrdPort = "/dev/i2c-1";
 
-PendulumHardware::PendulumHardware(const ros::NodeHandle &nh) :
-  _nh(nh),
-  _pub_position(),
+PendulumHardware::PendulumHardware(void) :
   _mtr(),
   _encoder_board(kEncoderBrdPort, kEncoderBrdAddr),
   _initialized(false)
 {
-  _pub_position = _nh.advertise<pendulum::Control>("control", 100);
 }
 
 bool PendulumHardware::initialize(void)
@@ -50,13 +46,9 @@ PendulumHardware::Positions PendulumHardware::update(const double input_N)
   motor_drive_current(current);
   Positions pos = _pos_fut.get();
 
-  _msg.theta = pos.pendulum_theta;
-  _msg.x     = pos.position_x;
-  _msg.u     = input_N;
-
-  _msg.header.stamp = ros::Time::now();
-  _msg.header.seq  += 1;
-  _pub_position.publish(_msg);
+  _theta = pos.pendulum_theta;
+  _x     = pos.position_x;
+  _input = input_N;
 
   return pos;
 }
@@ -143,6 +135,7 @@ bool PendulumHardware::motor_lim_neg_check(void)
 
 double PendulumHardware::force_to_current(const double force) const
 {
+  // Equation determined from experimentation with motor and loadcell
   static constexpr double slope  = 0.0156;
   static constexpr double offset = 0.1050;
 

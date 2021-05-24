@@ -22,17 +22,18 @@ class BaseImage:
 
         # State variable x is in meters
         # Scaling converts x to pixels (1 m = X pixels)
-        self.scaling = 500.0
+        self.scaling = 1000.0
+        self.x_offset_pixel = 100.0
 
         # Iitialize State
-        self.x     = x0*self.scaling
+        self.x     = x0*self.scaling + self.x_offset_pixel
         self.theta = theta0
 
         # ROS subscriber for updates to state
         self.sub = rospy.Subscriber(name, State, self.set_state)
 
     def set_state(self, state):
-        self.x = state.x*self.scaling
+        self.x = state.x*self.scaling + self.x_offset_pixel
         self.theta = state.theta
 
     def get_state(self):

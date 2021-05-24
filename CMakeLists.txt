@@ -95,7 +95,6 @@ find_package(
                system)
 
 add_subdirectory( tests )
-add_subdirectory( control )
 add_subdirectory( hardware )
 add_subdirectory( plant )
 add_subdirectory( libs )

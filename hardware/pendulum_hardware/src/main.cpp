@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
   ros::init(argc, argv, "pendulum_hardware");
   ros::NodeHandle nh;
 
-  PendulumHardware hw(nh);
+  PendulumHardware hw;
   if(!hw.initialize()) {
     ROS_ERROR("Failed to initialize hardware.");
     return 0;
