@@ -12,6 +12,8 @@
 
 #include <plant/BaseObject.hpp>
 #include <libs/control/Pid.hpp>
+#include <libs/control/DigitalPid.hpp>
+#include <libs/control/LeadLag.hpp>
 #include <libs/util/ros_util.hpp>
 
 #include <ros/ros.h>
@@ -80,6 +82,9 @@ int main(int argc, char *argv[])
   BaseObject::X_t x{0.0, 0.0}; // Initialize state
   std::shared_ptr<Plant<2>> plant = BaseObject::create(x);
   PID pid(step, Kp, Ki, Kd, 0.0);
+  DigitalPID pid_d(step, Kp, Ki, Kd, 0.0);
+  LeadLad compensator(step, 50.0, 5.0, 31.5);
+
 
   // ---  Display on GUI    --- //
   util::display(nh, state_topic, x[0], 0.0, pendulum::DrawSystemRequest::MASS_ONLY, "blue");

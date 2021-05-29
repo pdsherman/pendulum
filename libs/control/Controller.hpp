@@ -9,15 +9,15 @@
 #pragma once
 
 template<typename X, typename U>
-class ControlBase
+class Controller
 {
 public:
 
   /// Constructor
-  ControlBase(void) = default;
+  Controller(void) = default;
 
   /// Default
-  virtual ~ControlBase(void) = default;
+  virtual ~Controller(void) = default;
 
   virtual void init(const X &x0){};
 
@@ -47,12 +47,12 @@ public:
 protected:
 
   /// Target state for control loop
-  X _target;
+  X _target{0.0};
 
   /// Latest calculated control value
-  U _u;
+  U _u{0.0};
 
   /// Time between loop updates
-  double _dt;
+  double _dt{0.0};
 
 };

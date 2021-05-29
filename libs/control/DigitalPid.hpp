@@ -1,19 +1,21 @@
 /**
-  @file:   Pid.hpp
+  @file:   DigitalPid.hpp
   @author: pdsherman
-  @date:   Feb. 2020
+  @date:   May. 2020
 
-  @brief Simple library to implement a PID feedback control algorithm
+  @brief Library to implement a digital PID feedback controller using Euler for digital transform
 */
 
 #pragma once
 
 #include <libs/control/Controller.hpp>
 
-class PID : public Controller<double, double>
+
+class DigitalPID : public Controller<double, double>
 {
 public:
-  PID(const double delta_t = 1.0,
+
+  DigitalPID(const double delta_t = 1.0,
     const double Kp = 1.0,
     const double Ki = 0.0,
     const double Kd = 0.0,
@@ -29,7 +31,6 @@ public:
   double update(const double &x) override;
 
 private:
-
   /// Proportional gain
   double _Kp;
 
@@ -39,13 +40,9 @@ private:
   /// Derivative gain
   double _Kd;
 
-  /// Summation of the error over time
-  double _integral_sum;
-
-  /// Previous value of process variable
-  double _x_prev;
-
-  /// Previous error of last control loop
-  double _error_prev;
+  double _u_prev_1;
+  double _u_prev_2;
+  double _error_prev_1;
+  double _error_prev_2;
 
 };

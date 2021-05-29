@@ -1,4 +1,7 @@
-
+/*
+ * See header file for documentation
+ */
+ 
 #include <libs/control/Pid.hpp>
 
 PID::PID(const double delta_t, const double Kp, const double Ki, const double Kd, const double target)

@@ -1,3 +1,5 @@
 add_library( control
   src/Pid.cpp
-  src/ControlBase.cpp)
+  src/DigitalPid.cpp
+  src/LeadLag.cpp
+  src/Controller.cpp)
