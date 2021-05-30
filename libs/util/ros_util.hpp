@@ -47,18 +47,24 @@ bool drop_logging_table(ros::NodeHandle &nh, const std::string &table);
 
 /// Attempt to call the Draw System service to display
 /// object on the simulation GUI.
-/// @param [in] nh
-/// @param [in] topic_name
-/// @param [in] x0
-/// @param [in] theta0
-/// @param [in] img_type
-/// @param [in] base_color
-/// @param [in] pendulum_color
+/// @param [in] nh ROS node handle object
+/// @param [in] topic_name Name of topic to publish system positions (to update image)
+/// @param [in] x0 Initial x position
+/// @param [in] theta0 Initial theta position
+/// @param [in] img_type Image type [PENDULUM or MASS_ONLY]
+/// @param [in] base_color Color of object base
+/// @param [in] pendulum_color Color of pendulum
 /// @return True if service exists and returns successfully
-bool display(ros::NodeHandle &nh, const std::string &topic_name,
+bool draw_image(ros::NodeHandle &nh, const std::string &topic_name,
   const double x0, const double theta0,
   const int img_type = pendulum::DrawSystemRequest::PENDULUM,
   const std::string &base_color = "blue",
   const std::string &pendulum_color = "green");
+
+/// Remove image of system from system display GUI
+/// @param [in] nh ROS node handle object
+/// @param [in] topic_name Name of topic that indicates was image to remove
+/// @return True if image removal successful
+bool remove_image(ros::NodeHandle &nh, const std::string &topic_name);
 
 } // namespace util

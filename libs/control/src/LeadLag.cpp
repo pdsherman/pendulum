@@ -14,7 +14,7 @@ LeadLag::LeadLag(const double T, const double z, const double p, const double K,
   switch (method) {
     case DigitialTransform::kTustins:
       n = _p*_dt + 2.0;
-      _c[0] = (_p*_dt - 2.0)/n;
+      _c[0] = (2.0 - _p*_dt)/n;
       _c[1] = _K*(_z*_dt + 2.0)/n;
       _c[2] = _K*(_z*_dt - 2.0)/n;
       break;

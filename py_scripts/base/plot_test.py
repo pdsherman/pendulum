@@ -14,12 +14,10 @@ import sys
 import matplotlib
 import matplotlib.pyplot as plt
 
-TEST_NAME  = "BaseControlTest"
-
-def get_data(table_name, filter=None):
+def get_data(table_name, test_name, filter=None):
     data = {"time": [], "input": [], "position": [], "target": []}
     database = "/home/pdsherman/projects/pendulum/catkin_ws/src/pendulum/data/PendulumDatabase.db"
-    command  = "SELECT * FROM {} where test = \"{}\"".format(table_name, TEST_NAME)
+    command  = "SELECT * FROM {} where test = \"{}\" ORDER BY test_time".format(table_name, test_name)
     if filter:
         command += filter
 
@@ -39,24 +37,34 @@ def get_data(table_name, filter=None):
 
 if __name__ == "__main__":
 
+    table_names = ["BaseModelTest", "BaseControl"]
     if(len(sys.argv) > 1 and sys.argv[1] == "real"):
-        table_name = "BaseControl"
-    else:
-        table_name = "BaseModelTest"
+        test_name = sys.argv[1]
 
-    data = get_data(table_name)
-    t    = data["time"]
-    x    = data["position"]
-    u    = data["input"]
-    goal = data["target"]
+    t          = []
+    x          = []
+    u          = []
+
+    for test in test_names:
+        data = get_data(table_name, test)
+        t.append(data["time"])
+        x.append(data["position"])
+        u.append(data["input"])
+    goal = data["target"] # Same for each
 
     plt.figure()
-    plt.plot(t, x, "b-")
-    plt.plot(t, goal, "r-")
+    plt.plot(t[0], x[0], "b-")
+    plt.plot(t[1], x[1], "k-")
+    plt.plot(t[2], x[2], "g-")
+    plt.plot(t[2], goal, "r-")
+    plt.legend(["PID", "dPID", "Lag"])
     plt.title("Position vs. Target")
 
     plt.figure()
-    plt.plot(t, u)
+    plt.plot(t[0], u[0], "b-")
+    plt.plot(t[1], u[1], "k-")
+    plt.plot(t[2], u[2], "g-")
+    plt.legend(["PID", "dPID", "Lag"])
     plt.title("Command Input (N)")
 
     plt.show()

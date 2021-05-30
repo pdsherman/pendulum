@@ -27,13 +27,11 @@ double DigitalPID::update(const double &x)
 {
   double error = _target - x;
 
-  double prop = _Kp*(error - _error_prev_2);
-  double deri = (2*_Kd/_dt)*(error - 2*_error_prev_1 + _error_prev_2);
-  double inte = (0.5*_dt*_Ki)*(error + 2*_error_prev_1 + _error_prev_2);
-  double u = _u_prev_2 + prop + deri + inte;
+  double u = _u;
+  u += (_Kp + _dt*_Ki + _Kd/_dt)*error;
+  u -= (_Kp + 2.*_Kd/_dt)*_error_prev_1;
+  u += _Kd/_dt*_error_prev_2;
 
-  _u_prev_2 = _u_prev_1;
-  _u_prev_1 = _u;
   _u = u;
 
   _error_prev_2 = _error_prev_1;

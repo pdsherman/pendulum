@@ -4,6 +4,7 @@
 #include <pendulum/LoggingDropTable.h>
 
 #include <pendulum/DrawSystem.h>
+#include <pendulum/DeleteSystem.h>
 
 #include <libs/util/ros_util.hpp>
 
@@ -80,7 +81,7 @@ bool drop_logging_table(ros::NodeHandle &nh, const std::string &table)
   return true;
 }
 
-bool display(ros::NodeHandle &nh, const std::string &topic_name,
+bool draw_image(ros::NodeHandle &nh, const std::string &topic_name,
   const double x0, const double theta0,
   const int img_type,
   const std::string &base_color, const std::string &pendulum_color)
@@ -92,15 +93,29 @@ bool display(ros::NodeHandle &nh, const std::string &topic_name,
   }
 
   pendulum::DrawSystem gui_srv;
-  gui_srv.request.name  = topic_name;
-  gui_srv.request.x     = x0;
-  gui_srv.request.theta = theta0;
-  gui_srv.request.img_type = img_type;
-  gui_srv.request.base_color = base_color;
+  gui_srv.request.name           = topic_name;
+  gui_srv.request.x              = x0;
+  gui_srv.request.theta          = theta0;
+  gui_srv.request.img_type       = img_type;
+  gui_srv.request.base_color     = base_color;
   gui_srv.request.pendulum_color = pendulum_color;
 
   gui_client.call(gui_srv);
 
+  return gui_srv.response.result;
+}
+
+bool remove_image(ros::NodeHandle &nh, const std::string &topic_name)
+{
+  ros::ServiceClient gui_client = nh.serviceClient<pendulum::DeleteSystem>("/gui/delete_system");
+  if(!service_exists_timeout(gui_client)) {
+    ROS_WARN("Unable to reach DeleteSystem service.");
+    return false;
+  }
+
+  pendulum::DeleteSystem gui_srv;
+  gui_srv.request.name = topic_name;
+  gui_client.call(gui_srv);
   return gui_srv.response.result;
 }
 
