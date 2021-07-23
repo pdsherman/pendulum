@@ -6,6 +6,7 @@ target_link_libraries( control_base
   control
   pendulum_hardware
   util
+  ${Boost_PROGRAM_OPTIONS_LIBRARY}
   ${catkin_LIBRARIES} )
 
 add_dependencies( control_base ${PROJECT_NAME}_generate_messages )

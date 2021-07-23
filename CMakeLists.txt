@@ -92,7 +92,8 @@ find_package(
     Boost 1.54 REQUIRED
     COMPONENTS atomic
                chrono
-               system)
+               system
+               program_options)
 
 add_subdirectory( tests )
 add_subdirectory( hardware )

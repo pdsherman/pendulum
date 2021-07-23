@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <iostream>
+
 template<typename X, typename U>
 class Controller
 {

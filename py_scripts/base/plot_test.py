@@ -37,34 +37,31 @@ def get_data(table_name, test_name, filter=None):
 
 if __name__ == "__main__":
 
-    table_names = ["BaseModelTest", "BaseControl"]
-    if(len(sys.argv) > 1 and sys.argv[1] == "real"):
-        test_name = sys.argv[1]
+    table_names = ["BaseControl"] # "BaseModelTest"
+    test_name  = "PID"
 
-    t          = []
-    x          = []
-    u          = []
-
-    for test in test_names:
-        data = get_data(table_name, test)
+    t = []
+    x = []
+    u = []
+    for name in table_names:
+        data = get_data(name, test_name)
         t.append(data["time"])
         x.append(data["position"])
         u.append(data["input"])
     goal = data["target"] # Same for each
 
-    plt.figure()
-    plt.plot(t[0], x[0], "b-")
-    plt.plot(t[1], x[1], "k-")
-    plt.plot(t[2], x[2], "g-")
-    plt.plot(t[2], goal, "r-")
-    plt.legend(["PID", "dPID", "Lag"])
+    plt.figure(num=None, figsize=(12, 9))
+    for i in range(len(t)):
+        plt.plot(t[i], x[i], "b-")
+    plt.plot(t[-1], goal, "r-")
+    #plt.legend(["PID", "dPID", "Lag"])
     plt.title("Position vs. Target")
+    plt.grid(True)
+    plt.tight_layout()
 
     plt.figure()
     plt.plot(t[0], u[0], "b-")
-    plt.plot(t[1], u[1], "k-")
-    plt.plot(t[2], u[2], "g-")
-    plt.legend(["PID", "dPID", "Lag"])
+    #plt.legend(["PID", "dPID", "Lag"])
     plt.title("Command Input (N)")
 
     plt.show()

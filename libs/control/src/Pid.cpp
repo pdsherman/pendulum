@@ -1,7 +1,7 @@
 /*
  * See header file for documentation
  */
- 
+
 #include <libs/control/Pid.hpp>
 
 PID::PID(const double delta_t, const double Kp, const double Ki, const double Kd, const double target)
@@ -37,7 +37,7 @@ double PID::update(const double &x)
   double out_i = _Ki * _integral_sum;
 
   // Derivative
-  double out_d = -_Kd*(x - _x_prev);
+  double out_d = (_Kd/_dt)*(error - _error_prev);
 
   // updated control
   double u = out_p + out_i + out_d;

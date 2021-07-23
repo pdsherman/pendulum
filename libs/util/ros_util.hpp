@@ -45,6 +45,11 @@ bool stop_logging(ros::NodeHandle &nh, const std::string &table);
 /// @return True if service called successfully
 bool drop_logging_table(ros::NodeHandle &nh, const std::string &table);
 
+/// Call logging node service to check if logging has completed
+/// @param [in] nh    Reference to ROS node handle object.
+/// @return True if service called and returned is empty
+bool check_logging_done(ros::NodeHandle &nh);
+
 /// Attempt to call the Draw System service to display
 /// object on the simulation GUI.
 /// @param [in] nh ROS node handle object

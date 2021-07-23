@@ -5,6 +5,7 @@ add_library( pendulum_model
   src/PendulumModel.cpp
   src/SimplePendulum.cpp
   src/BaseObject.cpp
+  src/ExampleDigital.cpp
 )
 target_link_libraries( pendulum_model
   util

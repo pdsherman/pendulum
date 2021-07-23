@@ -21,14 +21,14 @@
 #include <thread>   // For this_thread::sleep_until
 #include <chrono>
 
-static constexpr double kRunTime_s  = 20.0;
-static constexpr int kUpdateCycleTime_us  = 5000;
+static constexpr double kRunTime_s  = 10.0;
+static constexpr int kUpdateCycleTime_us  = 7500;
 static constexpr int kSolverCycleTime_us  = 250;
-static constexpr double step = static_cast<double>(kSolverCycleTime_us) / (1e6);  // Discrete time step between cycles
+static constexpr double step = static_cast<double>(kUpdateCycleTime_us) / (1e6);  // Discrete time step between cycles
 
 static constexpr double Kp = 200.0;
-static constexpr double Ki = 550.0;
-static constexpr double Kd = 0.0;
+static constexpr double Ki = 150.0;
+static constexpr double Kd = 5.5;
 
 static constexpr double Zero = 50.0;
 static constexpr double Pole = 5.0;
@@ -73,16 +73,16 @@ int main(int argc, char *argv[])
   std::shared_ptr<Controller<double, double>> cntrl;
 
   cntrl = std::dynamic_pointer_cast<Controller<double, double>>(
-    std::make_shared<PID>(step, Kp, Ki, Kd, 0.0));
+    std::make_shared<PID>(step, Kp, Ki, 0.0, 0.0));
   parameters.push_back({cntrl, "PID"});
 
   cntrl = std::dynamic_pointer_cast<Controller<double, double>>(
-    std::make_shared<DigitalPID>(step, Kp, Ki, Kd, 0.0));
-  parameters.push_back({cntrl, "Digital-PID"});
+    std::make_shared<DigitalPID>(step, Kp, Ki, 0.0, 0.0));
+  parameters.push_back({cntrl, "digital-PID"});
 
-  cntrl = std::dynamic_pointer_cast<Controller<double, double>>(
-    std::make_shared<LeadLag>(step, Zero, Pole, Gain, LeadLag::DigitialTransform::kTustins));
-  parameters.push_back({cntrl, "LeadLag"});
+  // cntrl = std::dynamic_pointer_cast<Controller<double, double>>(
+  //   std::make_shared<LeadLag>(step, Zero, Pole, Gain, LeadLag::DigitialTransform::kTustins));
+  // parameters.push_back({cntrl, "lag"});
 
 
   for(size_t i = 0; i < parameters.size(); ++i) {
@@ -98,6 +98,7 @@ int main(int argc, char *argv[])
     // ---   Run Test   --- //
     ros::Duration(0.5).sleep();
     ROS_INFO("- Beginning Simulation Loop: %s", parameters[i].second.c_str());
+    parameters[i].first->init(x[0]); // Initialize control loop
 
     double t = 0.0;   // Time since start of test
     double u = 0.0;   // Input command
@@ -106,6 +107,8 @@ int main(int argc, char *argv[])
     std::chrono::steady_clock::time_point now_time        = start_time;
     std::chrono::steady_clock::time_point outer_stop_time = start_time;
     std::chrono::steady_clock::time_point inner_stop_time = start_time;
+
+
 
     while(ros::ok() && t < kRunTime_s) {
       using namespace std::chrono;

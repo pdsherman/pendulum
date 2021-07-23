@@ -2,6 +2,7 @@
 #include <pendulum/LoggingStart.h>
 #include <pendulum/LoggingStop.h>
 #include <pendulum/LoggingDropTable.h>
+#include <pendulum/LoggingBufferCheck.h>
 
 #include <pendulum/DrawSystem.h>
 #include <pendulum/DeleteSystem.h>
@@ -79,6 +80,19 @@ bool drop_logging_table(ros::NodeHandle &nh, const std::string &table)
     return false;
   }
   return true;
+}
+
+bool check_logging_done(ros::NodeHandle &nh)
+{
+  ros::ServiceClient sql_client = nh.serviceClient<pendulum::LoggingBufferCheck>("/sqlite/log_buffer_check");
+  if(!service_exists_timeout(sql_client)) {
+    ROS_WARN("Unable to reach drop table service.");
+    return false;
+  }
+
+  pendulum::LoggingBufferCheck buffer_check;
+  sql_client.call(buffer_check);
+  return buffer_check.response.is_empty;
 }
 
 bool draw_image(ros::NodeHandle &nh, const std::string &topic_name,

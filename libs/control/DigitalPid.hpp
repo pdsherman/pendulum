@@ -40,9 +40,9 @@ private:
   /// Derivative gain
   double _Kd;
 
-  double _u_prev_1;
-  double _u_prev_2;
-  double _error_prev_1;
-  double _error_prev_2;
+  double _u_k_1;
+  double _u_k_2;
+  double _e_k_1;
+  double _e_k_2;
 
 };
