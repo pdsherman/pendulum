@@ -10,7 +10,7 @@
 #include <chrono>
 
 namespace util {
-/// Class for timing a re-occurring event such as a function being.
+/// Class getting the average time for an event such as a function
 /// being called during a loop. Class can be used as follows
 ///
 /// FunctionTimer tmr

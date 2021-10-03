@@ -18,14 +18,13 @@
 
 namespace util {
 
-/// Given a set of X and Y where Y=f(X), use linear interpolation to estimate f(x_n)
+/// Given a set of X and Y values where Y=f(X), use linear interpolation to estimate f(x_n)
 /// @note Assumes set X is increasing monotonically increasing and size of X & Y is the same
 /// @param [in] x Set of X values
 /// @param [in] y Set of Y corresponding to y=f(x)
 /// @param [in] x_n Point on X axis to get estimate of f(x)
 /// @return Interpolated value of f(x_n)
 double interpolate(const std::vector<double> &x, const std::vector<double> &y, const double x_n);
-
 
 /// Read all the lines from a file and insert into c++ container
 /// @param [in] filename Name of file to read
@@ -48,10 +47,10 @@ void write_data_to_csv(const std::string &csv_file, std::map<std::string, std::v
 /// constants for speed_t are not themselves portable.
 int speed_to_baud(speed_t speed);
 
-/// Convenience function element-wise array addition.
+/// Convenience function for element-wise array addition.
 /// @param [in] a First array
 /// @param [in] b Second array
-/// @return Value of array addition
+/// @return Array resulting from addition operations
 template <typename T, int N>
 std::array<T, N> add_arrays(const std::array<T, N> &a, const std::array<T, N> &b)
 {

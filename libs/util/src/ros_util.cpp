@@ -12,12 +12,15 @@
 namespace util {
 
 
-bool service_exists_timeout(ros::ServiceClient &client)
+bool service_exists_timeout(ros::ServiceClient &client, const double timeout_s)
 {
+  static constexpr double dt = 0.5; // Check every 0.5 seconds
+  const int max_count = static_cast<int>(timeout_s/dt);
+
   int count = 0;
   while(!client.exists()) {
-    if (count++ == 10) { return false; }
-    ros::Duration(0.5).sleep();
+    if (count++ == max_count) { return false; }
+    ros::Duration(dt).sleep();
   }
   return true;
 }
@@ -42,7 +45,7 @@ bool start_logging(ros::NodeHandle &nh,
   if(sql_client.call(start_log) && start_log.response.success) {
     // Experimentally found that some delay is needed after starting
     // logging before you can start publishing data.
-    usleep(300000);
+    ros::Duration(0.3).sleep();
     return true;
   }
 
@@ -95,10 +98,13 @@ bool check_logging_done(ros::NodeHandle &nh)
   return buffer_check.response.is_empty;
 }
 
-bool draw_image(ros::NodeHandle &nh, const std::string &topic_name,
-  const double x0, const double theta0,
+bool draw_image(ros::NodeHandle &nh,
+  const std::string &topic_name,
+  const double x0,
+  const double theta0,
   const int img_type,
-  const std::string &base_color, const std::string &pendulum_color)
+  const std::string &base_color,
+  const std::string &pendulum_color)
 {
   ros::ServiceClient gui_client = nh.serviceClient<pendulum::DrawSystem>("/gui/draw_system");
   if(!service_exists_timeout(gui_client)) {

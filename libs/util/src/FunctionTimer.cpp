@@ -1,6 +1,5 @@
 
 #include <libs/util/FunctionTimer.hpp>
-
 #include <numeric> // accumulate
 
 namespace util {

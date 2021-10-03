@@ -10,7 +10,7 @@
 #include <mutex>
 #include <atomic>
 
-/// Simple thread-safe queue object
+/// Simple thread-safe queue container
 /// that allows for concurrent push and pop operations
 template<typename T>
 class ThreadsafeQueue
@@ -18,8 +18,7 @@ class ThreadsafeQueue
 private:
 
 /// Internal object to make up nodes in the queue
-/// Contains value to data user wants stored
-///  and pointer to next item in queue
+/// Contains value and pointer to next item in queue
 struct Node
 {
     std::shared_ptr<T> data;
@@ -30,7 +29,7 @@ struct Node
 public:
 
   /// Constructor
-  ThreadsafeQueue(void) : _head(new Node()), _tail(_head.get()), _curr_size(0) {}
+  ThreadsafeQueue(void);
 
   /// Default Destrutor
   ~ThreadsafeQueue(void) = default;
@@ -51,7 +50,7 @@ public:
 
 private:
 
-  /// Get the raw point to tail.
+  /// Get the raw pointer to tail.
   /// Used to compare against head for empty queue check
   Node *get_tail(void) const;
 
@@ -69,8 +68,12 @@ private:
 
   /// Current size of the queue
   std::atomic<size_t> _curr_size;
-
 };
+
+template<typename T>
+ThreadsafeQueue<T>::ThreadsafeQueue(void)
+ : _head(new Node()), _tail(_head.get()), _curr_size(0) 
+{}
 
 template<typename T>
 std::shared_ptr<T> ThreadsafeQueue<T>::pop(void)
@@ -92,7 +95,6 @@ template<typename T>
 void ThreadsafeQueue<T>::push(T value)
 {
   std::unique_ptr<Node> new_tail(new Node());
-
   {
     std::lock_guard<std::mutex> lck(_tail_mtx);
     _tail->data = std::make_shared<T>(std::move(value));

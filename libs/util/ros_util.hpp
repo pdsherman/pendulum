@@ -16,10 +16,16 @@
 
 namespace util {
 
-/// Repeatedly check for if the target service exists.
-/// Timeout after after 5 seconds.
+/// Repeatedly check for if the target service exists until
+/// timeout
+/// @param client Client to service to check for existence
+/// @param timeout Time in seconds to check before failing
 /// @return True if service exists before timeout
-bool service_exists_timeout(ros::ServiceClient &client);
+bool service_exists_timeout(ros::ServiceClient &client, const double timeout_s = 5.0);
+
+/// *********************************** ///
+/// **  Functions for Logging Node   ** ///
+/// *********************************** ///
 
 /// Attempt to call the logging node service to
 /// begin subscribing to a topic and log data
@@ -50,6 +56,10 @@ bool drop_logging_table(ros::NodeHandle &nh, const std::string &table);
 /// @return True if service called and returned is empty
 bool check_logging_done(ros::NodeHandle &nh);
 
+/// ************************************* ///
+/// **  Functions for Display GUI Node ** ///
+/// ************************************* ///
+
 /// Attempt to call the Draw System service to display
 /// object on the simulation GUI.
 /// @param [in] nh ROS node handle object
@@ -60,8 +70,10 @@ bool check_logging_done(ros::NodeHandle &nh);
 /// @param [in] base_color Color of object base
 /// @param [in] pendulum_color Color of pendulum
 /// @return True if service exists and returns successfully
-bool draw_image(ros::NodeHandle &nh, const std::string &topic_name,
-  const double x0, const double theta0,
+bool draw_image(ros::NodeHandle &nh,
+  const std::string &topic_name,
+  const double x0,
+  const double theta0,
   const int img_type = pendulum::DrawSystemRequest::PENDULUM,
   const std::string &base_color = "blue",
   const std::string &pendulum_color = "green");
