@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include <libs/logging/SqliteDatabase.hpp>
 #include <libs/logging/SqliteTable.hpp>
 #include <libs/threadsafe_queue/ThreadsafeQueue.hpp>
 
@@ -20,19 +21,26 @@ class DataHandler
 {
 public:
 
-  /// Default constructor
-  DataHandler(void) = default;
-
   /// Constructor
-  /// @param [in] tbl SQLite table for inserting data
-  DataHandler(std::unique_ptr<SqliteTable> &&tbl);
+  /// @param [in] db SQLite database connection object
+  DataHandler(std::shared_ptr<SqliteDatabase> db);
+
+  /// Delete copy constructor
+  DataHandler(const DataHandler&) = delete;
+
+  /// Delete Assignment operator
+  DataHandler operator=(const DataHandler&) = delete;
 
   /// Destructor
   ~DataHandler(void);
 
   /// Set the SqliteTable to use for logging
   /// @param [in] tbl Sqlite table to use
-  void set_table(std::unique_ptr<SqliteTable> &&tbl);
+  bool create_table(const std::string &tbl, const std::vector<std::string> &header);
+
+  /// Drop table if it exists
+  /// @return True if table exists and was able to be dropped form database
+  bool drop_table(void);
 
   /// Insert data into buffer to be inserted into SQLite table
   /// @param [in] data New datapoint to buffer

@@ -2,78 +2,60 @@
  * @file:   SqliteTable.hpp
  * @author: pdsherman
  * @date:   April 2020
- * @brief:  Class for subscibing to ROS topic and logging with SQLite table.
+ * @brief:  Class for logging data with SQLite library.
  */
 
 #pragma once
 
-#include <libs/util/FunctionTimer.hpp>
+#include <libs/logging/SqliteDatabase.hpp>
 
 #include <sqlite3.h>
-
 #include <string>
 #include <memory>
+#include <vector>
 
 class SqliteTable {
 public:
-  enum class DataTypes {
-    kNull,
-    kInteger,
-    kReal,
-    kText,
-    kBlob
-  };
-
   /// Constructor
   /// @param [in] database_file Filename of SQLite database
-  SqliteTable(const std::string &table_name);
+  SqliteTable(std::shared_ptr<SqliteDatabase> database);
 
   /// Destructor
-  ~SqliteTable(void);
+  ~SqliteTable(void) = default;
+
+  /// Makes sure the table exists in the database connection and unlocks
+  /// ability for object to insert data into databse
+  /// @param [in] table_name
+  /// @param [in] columns
+  bool initialize_table(const std::string &table_name, const std::vector<std::string> &columns);
+
+  /// Insert row into table
+  /// @param [in] test_index
+  /// @param [in] data
+  /// @return True if row inserted into table successfully
+  bool insert_row(const std::string &test_index, const std::vector<double> &data);
+
+  /// Check if table has been initialized and ready to insert rows into database
+  /// @return True if valid insert statement has been created
+  bool ready_to_insert(void) const;
+
+  /// Drop table from the database
+  /// @return True if table was able to be dropped
+  bool drop_table(void);
 
   /// @return Get the the table name
   std::string get_table_name(void) const;
 
-  /// Open database.
-  /// @param [in] database_file Filename of database
-  /// @note Empty string will create a temporary database that is destroyed
-  /// at object destruction
-  /// @return True if database created and/or opened successfully
-  bool open_database(const std::string &database_file = "");
-
-  /// Creates the table in that database if it doesn't already exist
-  /// @param [in] columns Vector of strings naming the table columns
-  /// @return True if table created successfully
-  bool create_table(const std::vector<std::string> &columns);
-
-  /// Remove table from the database if it exists
-  /// @return True if table existed in database and was removed
-  bool delete_table(void);
-
-  /// Insert row into table
-  /// @param [in] timestamp Timestamp when datapoint sampled
-  /// @param [in] test_time Time from the start of the test
-  /// @return True if row inserted into table successfully
-  bool insert_row(const std::string &test_index, const std::vector<double> &data);
-
 private:
 
-  bool creat_insert_stmt(const std::vector<std::string> &colums);
-
   /// Pointer to database
-  std::shared_ptr<sqlite3> _db;
+  std::shared_ptr<SqliteDatabase> _db;
 
   /// Insertion statement to persists for life of logging process
   std::shared_ptr<sqlite3_stmt> _insert_stmt;
 
-  /// Does the table exisit in the database
-  bool _table_exists;
-
   /// Name of table in database
   std::string _table_name;
-
-  /// Flags for creating table
-  static constexpr int kDbFlags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
 
   /// Directory for database
   static const std::string kDatabaseDirectory;

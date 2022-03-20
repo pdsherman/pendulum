@@ -13,31 +13,59 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <atomic>
+#include <thread>
+#include <random>
 
 static const std::string db_filename = "TestDatabase.db";
 
+void write_to_table(std::unique_ptr<SqliteTable> tbl)
+{
+  std::string tst = "thread_test";
+  std::vector<double> data(3);
+
+  for(int ii = 0; ii < 10000; ++ii) {
+    data[0] = ii;
+    data[1] = ii * 3;
+    data[2] = ii * ii;
+    tbl->insert_row(tst, data);
+  }
+}
+
 int main(int argc, char* argv[])
 {
-  SqliteTable table("TestTable");
-  if(table.open_database(db_filename)){
-    std::vector<std::string> cols({"ColIndex", "A", "B", "C", "D"});
-    table.create_table(cols);
+  std::shared_ptr<SqliteDatabase> db = std::make_shared<SqliteDatabase>();
+  if(db->open_database("test-db-1.db3")){
+    std::unique_ptr<SqliteTable> tbl1 = std::unique_ptr<SqliteTable>(new  SqliteTable(db));
+    std::unique_ptr<SqliteTable> tbl2 = std::unique_ptr<SqliteTable>(new  SqliteTable(db));
+    std::unique_ptr<SqliteTable> tbl3 = std::unique_ptr<SqliteTable>(new  SqliteTable(db));
 
+    std::string tbl_name1 = "Table01";
+    std::string tbl_name2 = "Table02";
+    std::string tbl_name3 = "Table03";
+    std::vector<std::string> cols({"TEST_STR", "A", "B", "C"});
 
-    util::FunctionTimer tmr;
+    if(tbl1->initialize_table(tbl_name1, cols) &&
+        tbl2->initialize_table(tbl_name2, cols) &&
+        tbl3->initialize_table(tbl_name3, cols)) {
 
-    for(size_t i = 0; i < 10000; ++i) {
-      tmr.start();
-      table.insert_row("Trial_01", {3.3+i, 4.3, 5.3, 7.3});
-      tmr.stop();
+          // Create three threads
+          // Insert a bunch of data at the same time
+          std::thread t1 = std::thread(write_to_table, std::move(tbl1));
+          std::thread t2 = std::thread(write_to_table, std::move(tbl2));
+          std::thread t3 = std::thread(write_to_table, std::move(tbl3));
+
+          if(t1.joinable())
+            t1.join();
+          if(t2.joinable())
+            t2.join();
+          if(t3.joinable())
+            t3.join();
     }
-    table.delete_table();
 
-    std::cout << "Time: " << tmr.average_us()/1000.0 << " ms" << std::endl;
 
-  } else {
-    std::cout << "Unable to open database" << std::endl;
   }
 
+  std::cout << "...End of Test" << std::endl;
   return 0;
 }

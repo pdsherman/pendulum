@@ -1,18 +1,11 @@
-add_subdirectory(test)
 
 add_library( sql_table
-  src/SqliteTable.cpp )
-target_link_libraries( sql_table
-  func_timer
-  ${SQLITE3_LIBRARIES} )
-add_dependencies( sql_table ${PROJECT_NAME}_generate_messages )
+  src/SqliteTable.cpp
+  src/SqliteDatabase.cpp)
+target_link_libraries( sql_table ${SQLITE3_LIBRARIES} )
 
-add_executable( sql_node
-  src/main.cpp
+add_library( log_data_hander
   src/DataHandler.cpp)
-target_link_libraries( sql_node
-  sql_table
-  ${catkin_LIBRARIES})
+target_link_libraries( log_data_hander sql_table )
 
-add_dependencies( sql_node ${PROJECT_NAME}_generate_messages )
-install(TARGETS sql_node RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION} )
+add_subdirectory(test)

@@ -6,8 +6,8 @@
 
 #include <libs/logging/DataHandler.hpp>
 
-DataHandler::DataHandler(std::unique_ptr<SqliteTable> &&tbl) :
-  _table(std::move(tbl)),
+DataHandler::DataHandler(std::shared_ptr<SqliteDatabase> db) :
+  _table(new SqliteTable(std::move(db))),
   _buffer(),
   _logging_thread(),
   _logging_active(false)
@@ -19,11 +19,14 @@ DataHandler::~DataHandler(void)
   logging_end();
 }
 
-void DataHandler::set_table(std::unique_ptr<SqliteTable> &&tbl)
+bool DataHandler::create_table(const std::string &tbl, const std::vector<std::string> &header)
 {
-  if(!_logging_active.load()) {
-    _table = std::move(tbl);
-  }
+   return !_logging_active.load() && _table->initialize_table(tbl, header);
+}
+
+bool DataHandler::drop_table(void)
+{
+  return _table->drop_table();
 }
 
 void DataHandler::buffer_data(const std::string &test_name, const std::vector<double> &data)
@@ -43,8 +46,7 @@ size_t DataHandler::buffer_size(void)
 
 bool DataHandler::logging_begin(void)
 {
-  if(!_logging_active.load())
-  {
+  if(!_logging_active.load() && _table->ready_to_insert()) {
     _logging_thread = std::thread(&DataHandler::logging_thread_func, this);
     return true;
   }
@@ -68,12 +70,9 @@ void DataHandler::logging_thread_func(void)
   _logging_active = true;
   std::shared_ptr<Row> row;
   while(_logging_active.load()) {
-    row = _buffer.pop();
-
-    // If buffer is empty, pop() returns nullptr
+    row = _buffer.pop(); // If buffer is empty, pop() returns nullptr
     if(row) {
       _table->insert_row(row->first, row->second);
-      std::this_thread::sleep_for(std::chrono::microseconds(1));
     } else {
       std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }

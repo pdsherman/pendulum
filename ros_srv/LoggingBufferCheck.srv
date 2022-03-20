@@ -1,3 +1,4 @@
+string table_name
 ---
 uint64 size
 bool is_empty

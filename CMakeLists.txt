@@ -35,7 +35,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Declare ROS messages, services and actions ##
 ################################################
 
-add_message_files( DIRECTORY ${PROJECT_SOURCE_DIR}/msg
+add_message_files( DIRECTORY ${PROJECT_SOURCE_DIR}/ros_msg
    FILES
    State.msg
    Control.msg
@@ -43,7 +43,7 @@ add_message_files( DIRECTORY ${PROJECT_SOURCE_DIR}/msg
    LoggingData.msg
 )
 
-add_service_files( DIRECTORY ${PROJECT_SOURCE_DIR}/srv
+add_service_files( DIRECTORY ${PROJECT_SOURCE_DIR}/ros_srv
   FILES
   DrawSystem.srv
   DeleteSystem.srv
@@ -59,7 +59,7 @@ add_service_files( DIRECTORY ${PROJECT_SOURCE_DIR}/srv
 
 generate_messages( DEPENDENCIES std_msgs )
 
-roslaunch_add_file_check(launch)
+roslaunch_add_file_check(ros_launch)
 
 ###################################
 ## catkin specific configuration ##
@@ -99,4 +99,5 @@ add_subdirectory( tests )
 add_subdirectory( hardware )
 add_subdirectory( plant )
 add_subdirectory( libs )
+add_subdirectory( nodes )
 add_subdirectory( external_libs )
