@@ -55,6 +55,7 @@ add_service_files( DIRECTORY ${PROJECT_SOURCE_DIR}/ros_srv
   MotorDriveMode.srv
   MotorControlGains.srv
   HardwareTest.srv
+  EncoderTest.srv
 )
 
 generate_messages( DEPENDENCIES std_msgs )

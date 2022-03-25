@@ -12,7 +12,7 @@
 #include <functional>
 
 /// Numerical ODE solver using Runga-Kutta method
-/// Class is setup to system of first order ODEs
+/// Class is setup as system of first order ODEs
 /// The solver has been slightly modified from general
 /// RK formula as it's intended to be used for simulation
 /// of dynamic systems in state space form for control theory.

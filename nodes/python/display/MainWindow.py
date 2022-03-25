@@ -31,9 +31,10 @@ class MainWindow:
         # Buttons for bottom of GUI
         btns = []
         btns.append(("Quit", self.quit))
+        btns.append(("Clear", self.reset_window))
         self.btnBar = ButtonBar(self.root, btns, width=500, height=500)
 
-        self.img = ImageCanvas(self.root) # Display of pendulum
+        self.img = ImageCanvas(self.root) # Display window
         self.quit = False # Flag for killing GUI
 
         # ROS service server: Because ROS services are handled in a
@@ -85,6 +86,9 @@ class MainWindow:
     def quit(self):
         if askokcancel("Verify Exit", "Really Quit?"):
             self.quit = True
+
+    def reset_window(self):
+        print("Reset Place Holder...")
 
     def exit_requested(self):
         return self.quit

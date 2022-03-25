@@ -98,6 +98,9 @@ private:
   const double _cnt_to_rad_1;
   const double _cnt_to_rad_2;
 
+  /// Zero command value
+  static constexpr uint8_t kZeroCommand = 0x04;
+
   /// Constant PI
   static constexpr double pi  = 3.14159;
 

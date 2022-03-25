@@ -19,7 +19,7 @@
 
 int main(int argc, char *argv[])
 {
-  ros::init(argc, argv, "encoder");
+  ros::init(argc, argv, "single_encoder");
   ros::NodeHandle nh;
 
   // Attempt to Add pendulum to gui. Exit if service server doesn't start up in time.

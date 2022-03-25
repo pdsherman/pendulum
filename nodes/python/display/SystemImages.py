@@ -69,7 +69,7 @@ class MassOnlyImage(BaseImage):
 
 class PendulumImage(BaseImage):
     def __init__(self, x0, theta0, name):
-        SystemImage.__init__(self, x0, theta0, name)
+        BaseImage.__init__(self, x0, theta0, name)
 
         # Dimensions (pixels) for my fake pendulum
         self.length = 245.0

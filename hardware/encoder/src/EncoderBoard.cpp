@@ -116,7 +116,7 @@ void EncoderBoard::zero_position(void)
 {
   if(_is_open){
     uint8_t data[1];
-    data[0] = 0x04;
+    data[0] = kZeroCommand;
     ::write(_file_des, data, 1);
   }
 }
