@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+import sys
+sys.path.insert(1, "/home/pdsherman/projects/pendulum/catkin_ws/src/pendulum/py_libs")
+
 import rospy
 import time
 from MainWindow import MainWindow

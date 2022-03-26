@@ -16,14 +16,14 @@ from MotorTestGui import *
 # ----------------------------- #
 # --      START OF SCRIPT    -- #
 # ----------------------------- #
+if __name__ == "__main__":
+    try:
+        rospy.init_node("mtr_test", anonymous=False)
+        gui = MotorTestGui()
 
-try:
-    rospy.init_node("mtr_test", anonymous=False)
-    gui = MotorTestGui()
+        while not gui.quit_requested() and not rospy.is_shutdown():
+            gui.update()
+            time.sleep(0.01)
 
-    while not gui.quit_requested() and not rospy.is_shutdown():
-        gui.update()
-        time.sleep(0.01)
-
-except rospy.ROSInterruptException:
-    pass
+    except rospy.ROSInterruptException:
+        pass

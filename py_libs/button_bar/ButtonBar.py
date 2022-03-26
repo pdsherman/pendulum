@@ -1,9 +1,11 @@
+#!/user/bin/env python3
+
 """
 File:   ButtonBar.py
 Author: pdsherman
-Date:   Jan 2020
+Date:   March. 2022
 
-Description: Frame containing a row of buttons.
+Description: Creates row of button for GUI
 """
 
 from tkinter import *

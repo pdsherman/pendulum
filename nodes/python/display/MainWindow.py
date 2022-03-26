@@ -18,7 +18,7 @@ from pendulum.srv import DrawSystem, DrawSystemResponse, DrawSystemRequest
 from pendulum.srv import DeleteSystem, DeleteSystemResponse
 
 # Custom Frame objects
-from ButtonBar import ButtonBar
+from button_bar.ButtonBar import ButtonBar
 from ImageCanvas import ImageCanvas
 
 class MainWindow:
@@ -35,7 +35,7 @@ class MainWindow:
         self.btnBar = ButtonBar(self.root, btns, width=500, height=500)
 
         self.img = ImageCanvas(self.root) # Display window
-        self.quit = False # Flag for killing GUI
+        self.quit_flag = False # Flag for killing GUI
 
         # ROS service server: Because ROS services are handled in a
         # separate thread and Tkinter library functions can only be called
@@ -85,10 +85,10 @@ class MainWindow:
 
     def quit(self):
         if askokcancel("Verify Exit", "Really Quit?"):
-            self.quit = True
+            self.quit_flag = True
 
     def reset_window(self):
         print("Reset Place Holder...")
 
     def exit_requested(self):
-        return self.quit
+        return self.quit_flag

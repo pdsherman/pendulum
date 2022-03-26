@@ -18,14 +18,15 @@
 #include <ros/ros.h>
 #include <boost/function.hpp>
 
+#include <memory>
 
 bool encoder_service(
   pendulum::EncoderTest::Request &req,
   pendulum::EncoderTest::Response &res,
   ros::NodeHandle &nh,
-  EncoderBoard &encoder);
+  std::shared_ptr<EncoderBoard> encoder);
 
-bool node_setup(EncoderBoard& encoder, ros::NodeHandle &nh, const std::string &topic_name);
+bool node_setup(std::shared_ptr<EncoderBoard> encoder, ros::NodeHandle &nh, const std::string &topic_name);
 
 int main(int argc, char *argv[])
 {
@@ -33,7 +34,7 @@ int main(int argc, char *argv[])
   ros::NodeHandle nh;
 
 
-  EncoderBoard encdr("/dev/i2c-1", 0x33);
+  std::shared_ptr<EncoderBoard> encdr = std::make_shared<EncoderBoard>("/dev/i2c-1", 0x33);
   const std::string topic_name = "encoder_one";
 
 
@@ -43,14 +44,13 @@ int main(int argc, char *argv[])
   }
 
   static constexpr double pi  = 3.14159;
-  encdr.zero_position();
-  encdr.set_offset(EncoderBoard::Encoder::One, -pi/2);
+  encdr->set_offset(EncoderBoard::Encoder::One, -pi/2);
 
 
   // Server to handle encoder test requests
-  // boost::function<bool(pendulum::EncoderTest::Request &, pendulum::EncoderTest::Response &)>
-  //   service_cb = boost::bind(encoder_service, _1, _2, nh, encdr);
-  // ros::ServiceServer encoder_server = nh.advertiseService("encoder_test", service_cb);
+  boost::function<bool(pendulum::EncoderTest::Request &, pendulum::EncoderTest::Response &)>
+    service_cb = boost::bind(encoder_service, _1, _2, nh, encdr);
+  ros::ServiceServer encoder_server = nh.advertiseService("encoder_test", service_cb);
 
   // Publishing object for encoder data
   ros::Publisher pub = nh.advertise<pendulum::State>(topic_name, 100);
@@ -61,11 +61,11 @@ int main(int argc, char *argv[])
   const double dt = 0.02; // Time step
   ros::Rate rate(1/dt);
 
-  usleep(2000000);
+  usleep(500000);
 
   while(ros::ok()) {
     // update state variable
-    double pos = encdr.position_single();
+    double pos = encdr->position_single();
     state.theta = pos;
 	  state.header.seq += 1;
     state.header.stamp = ros::Time::now();
@@ -83,24 +83,19 @@ int main(int argc, char *argv[])
   return 0;
 }
 
-bool node_setup(EncoderBoard& encoder, ros::NodeHandle &nh, const std::string &topic_name)
+bool node_setup(std::shared_ptr<EncoderBoard> encoder, ros::NodeHandle &nh, const std::string &topic_name)
 {
   // Setup encoder hardware object
-  if(!encoder.connect()) {
+  if(!encoder->connect()) {
     ROS_WARN("Couldn't connect to encoder.");
     return false;
   }
-  encoder.set_mode(EncoderBoard::Mode::Both);
+  encoder->set_mode(EncoderBoard::Mode::Both);
   ROS_INFO("Encoder setup sucessful");
 
   // Display object onto GUI
-  int count = 0;
-  while(!util::draw_image(nh, topic_name, 0.3, 0.0)) {
-    ros::Rate(1).sleep();
-    if(++count > 20) {
-      ROS_WARN("Timeout waiting for DrawSystem service to exist. Kill Simulation node.");
-      return false;
-    }
+  if(!util::draw_image(nh, topic_name, 0.3, 0.0)) {
+      ROS_WARN("Timeout waiting for DrawSystem service to exist.");
   }
 
   return true;
@@ -110,18 +105,22 @@ bool encoder_service(
   pendulum::EncoderTest::Request &req,
   pendulum::EncoderTest::Response &res,
   ros::NodeHandle &nh,
-  EncoderBoard &encoder)
+  std::shared_ptr<EncoderBoard> encoder)
 {
   switch(req.command) {
     case pendulum::EncoderTestRequest::ZERO:
-      encoder.zero_position();
+      ROS_INFO("Zero Encoder");
+      encoder->zero_position();
       break;
     case pendulum::EncoderTestRequest::START_LOGGING:
+      ROS_INFO("Start Logging");
       break;
     case pendulum::EncoderTestRequest::STOP_LOGGING:
+      ROS_INFO("Stop Logging");
       break;
     case pendulum::EncoderTestRequest::SET_OFFSET:
-      encoder.set_offset(EncoderBoard::Encoder::One, req.offset);
+      ROS_INFO("Setting Offset");
+      encoder->set_offset(EncoderBoard::Encoder::One, req.offset);
       break;
   }
 
