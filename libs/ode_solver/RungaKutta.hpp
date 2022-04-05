@@ -13,9 +13,9 @@
 
 /// Numerical ODE solver using Runga-Kutta method
 /// Class is setup as system of first order ODEs
-/// The solver has been slightly modified from general
-/// RK formula as it's intended to be used for simulation
-/// of dynamic systems in state space form for control theory.
+/// The solver format has been slightly modified from general RK formula as it's intended
+/// to be used for simulation of dynamic systems in state space form for control theory where
+/// ODE input is a state variable AND an input force
 /// Given:
 ///     state variables:           x
 ///     input force:               u
@@ -39,6 +39,9 @@ template <int N>
 class RungaKutta
 {
 public:
+  // Syntax Convenience for state value
+  using X_t = std::array<double, N>;
+
   /// Options for RK solver
   enum class SolverType {
     kThirdOrder,
@@ -46,11 +49,8 @@ public:
     kFourthOrderOptimal
   };
 
-  // Syntax Convenience
-  using X_t = std::array<double, N>;
-
   /// Constructor
-  /// @param [in] f Diffential equation for x' - x'=f(x, u)
+  /// @param [in] f First order diffential equation for x'. x'=f(x, u)
   /// @param [in] type Option for what order of solver and solver coefficients
   RungaKutta(
     std::function<X_t(const X_t&, const double)> &&ode,
@@ -60,10 +60,10 @@ public:
   ~RungaKutta(void) = default;
 
   /// Calculate system one time step forward
-  /// @param [in] x0 Current state of the system - x(t0)
-  /// @param [in] u  Input command at current time- u(t0)
-  /// @param [in] dt Time step to calculate system forward - dt
-  /// @return State of the system one time step forward - x(t0+dt)
+  /// @param [in] x0 Current state of the system. x(t0)
+  /// @param [in] u  Input command at current time. u(t0)
+  /// @param [in] dt Time step to calculate system forward. dt
+  /// @return State of the system one time step forward. x(t0+dt)
   X_t step(const X_t &x0, const double u, const double dt) const;
 
 private:
@@ -78,7 +78,6 @@ private:
   /// See comments in step method
   std::vector<std::vector<double>> _a;
   std::vector<double> _b;
-
 };
 
 template<int N>

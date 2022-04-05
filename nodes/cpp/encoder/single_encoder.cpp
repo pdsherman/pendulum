@@ -9,7 +9,7 @@
 
 #include <pendulum/State.h>
 #include <pendulum/DrawSystem.h>
-#include <pendulum/LoggingStart.h>
+#include <pendulum/LoggingData.h>
 #include <pendulum/EncoderTest.h>
 
 #include <hardware/encoder/EncoderBoard.hpp>
@@ -18,6 +18,7 @@
 #include <ros/ros.h>
 #include <boost/function.hpp>
 
+#include <chrono>
 #include <memory>
 
 bool encoder_service(
@@ -28,17 +29,19 @@ bool encoder_service(
 
 bool node_setup(std::shared_ptr<EncoderBoard> encoder, ros::NodeHandle &nh, const std::string &topic_name);
 
+static std::string log_test_name  = "";
+static std::string log_table_name = "";
+static const std::string log_topic_name   = "logged_encoder_data";
+static const std::string state_topic_name = "encoder_one";
+static std::chrono::steady_clock::time_point time_start = std::chrono::steady_clock::now();
+
 int main(int argc, char *argv[])
 {
   ros::init(argc, argv, "single_encoder");
   ros::NodeHandle nh;
 
-
   std::shared_ptr<EncoderBoard> encdr = std::make_shared<EncoderBoard>("/dev/i2c-1", 0x33);
-  const std::string topic_name = "encoder_one";
-
-
-  if(!node_setup(encdr, nh, topic_name)) {
+  if(!node_setup(encdr, nh, state_topic_name)) {
     ROS_WARN("Unable to start encoder node.");
     return 1;
   }
@@ -46,16 +49,21 @@ int main(int argc, char *argv[])
   static constexpr double pi  = 3.14159;
   encdr->set_offset(EncoderBoard::Encoder::One, -pi/2);
 
-
   // Server to handle encoder test requests
   boost::function<bool(pendulum::EncoderTest::Request &, pendulum::EncoderTest::Response &)>
     service_cb = boost::bind(encoder_service, _1, _2, nh, encdr);
   ros::ServiceServer encoder_server = nh.advertiseService("encoder_test", service_cb);
 
   // Publishing object for encoder data
-  ros::Publisher pub = nh.advertise<pendulum::State>(topic_name, 100);
+  ros::Publisher pub_state = nh.advertise<pendulum::State>(state_topic_name, 100);
   pendulum::State state;
   state.x = 0.3; // Not used in this application
+
+  // Publishing object for logger node
+  ros::Publisher pub_log = nh.advertise<pendulum::LoggingData>(log_topic_name, 100);
+  pendulum::LoggingData log_data;
+  log_data.data = std::vector<double>(2);
+
 
   ROS_INFO("Starting Loop");
   const double dt = 0.02; // Time step
@@ -64,21 +72,33 @@ int main(int argc, char *argv[])
   usleep(500000);
 
   while(ros::ok()) {
-    // update state variable
+    // update state msg
     double pos = encdr->position_single();
     state.theta = pos;
 	  state.header.seq += 1;
     state.header.stamp = ros::Time::now();
 
-    if(state.header.seq % 200 == 0)
-      ROS_INFO("Position: %f", pos);
+    // update log msg
+    using namespace std::chrono;
+    steady_clock::time_point time_now = steady_clock::now();
+    int dt = duration_cast<microseconds>(time_now - time_start).count();
+
+    log_data.header.seq += 1;
+    log_data.header.stamp = ros::Time::now();
+    log_data.test_name = log_test_name;
+    log_data.data[0] = static_cast<double>(dt)/1000000.0;
+    log_data.data[1] = pos;
 
     // publish and delay
-    pub.publish(state);
+    pub_state.publish(state);
+    pub_log.publish(log_data);
     ros::spinOnce();
     rate.sleep();
-  }
 
+    // show on console for info sake
+    if(state.header.seq % 200 == 0)
+      ROS_INFO("Position: %f", pos);
+  }
 
   return 0;
 }
@@ -113,13 +133,27 @@ bool encoder_service(
       encoder->zero_position();
       break;
     case pendulum::EncoderTestRequest::START_LOGGING:
-      ROS_INFO("Start Logging");
+      {
+        log_test_name  = req.test_name;
+        log_table_name = req.table_name;
+        std::vector<std::string> header({"test_name", "test_time", "theta"});
+        if(util::start_logging(nh, log_table_name, log_topic_name, header)) {
+          time_start = std::chrono::steady_clock::now();
+          ROS_INFO("Logging started to table %s", req.table_name.c_str());
+        } else {
+          ROS_WARN("Failed to start logging");
+        }
+      }
       break;
     case pendulum::EncoderTestRequest::STOP_LOGGING:
-      ROS_INFO("Stop Logging");
+      if(!log_table_name.empty() && util::stop_logging(nh, log_table_name)) {
+        ROS_INFO("Logging stopped for table %s", log_table_name.c_str());
+      } else {
+        ROS_WARN("Failed to stop logging");
+      }
       break;
     case pendulum::EncoderTestRequest::SET_OFFSET:
-      ROS_INFO("Setting Offset");
+      ROS_INFO("Setting Offset: %f", req.offset);
       encoder->set_offset(EncoderBoard::Encoder::One, req.offset);
       break;
   }

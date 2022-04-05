@@ -6,5 +6,6 @@ int8 SET_OFFSET    = 3
 int8 encoder
 int8 command
 float64 offset
+string table_name
 string test_name
 ---

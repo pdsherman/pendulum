@@ -31,17 +31,20 @@ class EncoderTestGui:
     def __init__(self):
         # GUI Root
         self.root = tk.Tk()
-        self.root.geometry("650x420")
+        self.root.geometry("650x380")
         self.root.title("Encoder Testing")
 
-        # Flag for shutting down gui
-        self.quit_flag = False;
+        self.quit_flag = False # Flag for shutting down gui
+        self.encdr_srv_name = "/encoder_test" # Name of encoder service
 
         # Title Bar
         l = tk.Label(self.root)
         l.config(text="Encoder Testing", font=("Ubuntu", 14))
         l.config(bd=4, relief=tk.RIDGE)
         l.pack(side=tk.TOP, ipady=15, ipadx=50, pady=[0, 10], fill=tk.X)
+
+        # Boxes to show measurement
+        self.init_main_window()
 
         # Buttons for bottom of GUI
         btns = []
@@ -53,8 +56,6 @@ class EncoderTestGui:
         btns.append(("Stop Test", self.stop_test))
         self.btnBar = ButtonBar(self.root, btns, width=500, height=500)
 
-        # Boxes to show measurement
-        self.init_main_window()
         self.measurement = 0.0
 
     """
@@ -76,19 +77,20 @@ class EncoderTestGui:
         l = tk.Label(f)
         l.config(text="Display", font=("Ubuntu", 10))
         l.config(relief=tk.RIDGE)
-        l.grid(row=0, column=0, ipadx=9, ipady=2, pady=[0, 5])
+        l.grid(row=0, column=0, ipadx=9, padx=[150, 10], ipady=2, pady=[0, 5])
 
         self.display = EncoderDisplay(f, side_length=150)
-        self.display.grid(row=1, column=0, padx=10)
+        self.display.grid(row=1, column=0, padx=[150, 10])
 
         f.config(bd=2)
         f.pack(side=tk.TOP, fill=tk.X, pady=[25, 5])
 
     """
-    Update the encoder angle (display and text)
+    Update the stored encoder angle
     @note: Intended for use as ROS subscriber callback
     """
     def update_angle(self, state):
+        # Can't update display directly as ROS subscribes are in non-main thread
         self.measurement = state.theta
 
     """
@@ -107,13 +109,11 @@ class EncoderTestGui:
     def quit_requested(self):
         return self.quit_flag
 
-
     """
     Helper Callback for ros suscribe button
     Will begin GUI subsricing to encoder state topic
     """
     def subscribe_callback(self, topic, type):
-        # Create a subsrciber, connect it to update angle method
         if(type == "pendulum/State"):
             self.sub = rospy.Subscriber(topic, State, self.update_angle)
 
@@ -131,12 +131,18 @@ class EncoderTestGui:
     """
     def start_test(self):
         rospy.loginfo("Start an encoder test")
-        try:
-            req = EncoderTestRequest(encoder=1, command=EncoderTestRequest.START_LOGGING)
-            rospy.wait_for_service("/encoder_test", timeout=5)
-            rospy.ServiceProxy("/encoder_test", EncoderTest)(req)
-        except rospy.ROSException:
-            rospy.logwarn("Unable to call service.")
+        def cb(table_name, test_name):
+            try:
+                rospy.loginfo("Table: {} & Test: {}".format(table_name, test_name))
+                req = EncoderTestRequest(encoder=1, \
+                            command=EncoderTestRequest.START_LOGGING, \
+                            table_name = table_name, \
+                            test_name = test_name)
+                rospy.wait_for_service(self.encdr_srv_name, timeout=2)
+                rospy.ServiceProxy(self.encdr_srv_name, EncoderTest)(req)
+            except rospy.ROSException:
+                rospy.logwarn("Unable to call service.")
+        EncoderLoggingStart(self.root, cb)
 
     """
     """
@@ -144,8 +150,8 @@ class EncoderTestGui:
         rospy.loginfo("Stop an encoder Test")
         try:
             req = EncoderTestRequest(encoder=1, command=EncoderTestRequest.STOP_LOGGING)
-            rospy.wait_for_service("/encoder_test", timeout=5)
-            rospy.ServiceProxy("/encoder_test", EncoderTest)(req)
+            rospy.wait_for_service(self.encdr_srv_name, timeout=2)
+            rospy.ServiceProxy(self.encdr_srv_name, EncoderTest)(req)
         except rospy.ROSException:
             rospy.logwarn("Unable to call service.")
 
@@ -155,8 +161,8 @@ class EncoderTestGui:
         rospy.loginfo("Zero the encoder")
         try:
             req = EncoderTestRequest(encoder=1, command=EncoderTestRequest.ZERO)
-            rospy.wait_for_service("/encoder_test", timeout=5)
-            rospy.ServiceProxy("/encoder_test", EncoderTest)(req)
+            rospy.wait_for_service(self.encdr_srv_name, timeout=2)
+            rospy.ServiceProxy(self.encdr_srv_name, EncoderTest)(req)
         except rospy.ROSException:
             rospy.logwarn("Unable to call service.")
 
@@ -164,6 +170,17 @@ class EncoderTestGui:
     """
     def set_encoder_offset(self):
         rospy.loginfo("Set encoder offset")
+        def cb(offset):
+            try:
+                rospy.loginfo("Offset: {}".format(offset))
+                req = EncoderTestRequest(encoder=1, \
+                    command=EncoderTestRequest.SET_OFFSET, \
+                    offset = offset)
+                rospy.wait_for_service(self.encdr_srv_name, timeout=2)
+                rospy.ServiceProxy(self.encdr_srv_name, EncoderTest)(req)
+            except rospy.ROSException:
+                rospy.logwarn("Unable to call service.")
+        EncoderOffset(self.root, cb)
 
     """
     Opens pop-window to ask user if they are ready to quit GUI.

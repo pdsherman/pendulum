@@ -43,7 +43,7 @@ std::map<std::string, std::vector<double>> read_data_from_csv(const std::string&
 /// @param [in] data Map of data. Key will used as header column names
 void write_data_to_csv(const std::string &csv_file, std::map<std::string, std::vector<double>> data);
 
-/// Converts POSIX speed_t to a baud rate, as an integer.  The values of the
+/// Converts POSIX speed_t to a baud rate, as an integer. The values of the
 /// constants for speed_t are not themselves portable.
 int speed_to_baud(speed_t speed);
 
@@ -62,7 +62,7 @@ std::array<T, N> add_arrays(const std::array<T, N> &a, const std::array<T, N> &b
 
 /// Convenience function to get string representation of array.
 /// @param [in] a First array
-/// @return Value of array addition
+/// @return String in format "{x1, x2, ..., xn}"
 template <typename T, int N>
 std::string array_to_string(const std::array<T, N> &a)
 {

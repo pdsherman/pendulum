@@ -113,3 +113,107 @@ class EncoderPublishList(tk.Toplevel):
             self.destroy()
         else:
             rospy.logwarn("No selection made")
+
+class EncoderLoggingStart(tk.Toplevel):
+    def __init__(self, parent, select_callback):
+        tk.Toplevel.__init__(self, parent)
+        self.title("Logging Start")
+
+        # Called when input is made and selected
+        self.callback = select_callback
+
+        # Create Frame
+        frm1 = tk.Frame(self)
+        lb = tk.Label(frm1, text="Input Logging Info", font=("Courier", 16))
+        lb.grid(padx=[100,100], pady=[5,5])
+        frm1.config(bd=2, relief=tk.RIDGE)
+        frm1.pack(expand=tk.YES, fill=tk.X)
+
+        # Input Boxes
+        frm2 = tk.Frame(self)
+
+        l = tk.Label(frm2, text="Table Name:", font=("Courier", 12))
+        l.grid(row=0, column=0,  padx=[5, 15], pady=5)
+
+        self.tbl = tk.StringVar()
+        e = tk.Entry(frm2, width=25, font=("Courier", 12), textvariable=self.tbl)
+        e.grid(row=0, column=1)
+        self.tbl.set("table_name")
+
+        l = tk.Label(frm2, text=" Test Name:", font=("Courier", 12))
+        l.grid(row=1, column=0,  padx=[5, 15], pady=5)
+
+        self.test = tk.StringVar()
+        e = tk.Entry(frm2, width=25, font=("Courier", 12), textvariable=self.test)
+        e.grid(row=1, column=1)
+        self.test.set("test_name")
+
+        frm2.config(bd=2, relief=tk.RIDGE)
+        frm2.pack(expand=tk.YES, fill=tk.X)
+
+        # Selection Button
+        b = tk.Button(self, text="Select", command=self.selection, font="Courier", height=2, width=10)
+        b.pack(side=tk.BOTTOM)
+
+    def selection(self):
+        table_name = self.tbl.get()
+        test_name  = self.test.get()
+        if self.valid_sqlite_name(table_name) and self.valid_sqlite_name(test_name):
+            self.callback(table_name, test_name)
+        else:
+            rospy.logwarn("Invalid names")
+        self.destroy()
+
+    def valid_sqlite_name(self, s):
+        return len(s) != 0 \
+                and (not " " in s) \
+                and (not "-" in s) \
+                and s[0].isalpha()
+
+class EncoderOffset(tk.Toplevel):
+    def __init__(self, parent, select_callback):
+        tk.Toplevel.__init__(self, parent)
+        self.title("Offset")
+
+        # Called when input is made and selected
+        self.callback = select_callback
+
+        # Create Frame
+        frm1 = tk.Frame(self)
+        lb = tk.Label(frm1, text="Input Target Offset", font=("Courier", 16))
+        lb.grid(padx=[100,100], pady=[5,5])
+        frm1.config(bd=2, relief=tk.RIDGE)
+        frm1.pack(expand=tk.YES, fill=tk.X)
+
+        # Input Boxes
+        frm2 = tk.Frame(self)
+
+        l = tk.Label(frm2, text="Target Offset (deg):", font=("Courier", 12))
+        l.grid(row=0, column=0,  padx=[5, 15], pady=15)
+
+        self.offset = tk.StringVar()
+        validate_cmd = self.register(self.float_entry_ok)
+        e = tk.Entry(frm2, width=15, font=("Courier", 12), textvariable=self.offset,
+                            validate='key', validatecommand=(validate_cmd, '%P'))
+        e.grid(row=0, column=1)
+        self.offset.set("0.0")
+
+        frm2.config(bd=2, relief=tk.RIDGE)
+        frm2.pack(expand=tk.YES, fill=tk.X)
+
+        # Selection Button
+        b = tk.Button(self, text="Select", command=self.selection, font="Courier", height=2, width=10)
+        b.pack(side=tk.BOTTOM)
+
+    def selection(self):
+        offset = float(self.offset.get())
+        self.callback(offset)
+        self.destroy()
+
+    def float_entry_ok(self, post_change):
+        if post_change:
+            try:
+                float(post_change)
+            except ValueError:
+                return False
+        return True

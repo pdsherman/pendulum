@@ -96,9 +96,10 @@ find_package(
                system
                program_options)
 
-add_subdirectory( tests )
-add_subdirectory( hardware )
-add_subdirectory( plant )
-add_subdirectory( libs )
-add_subdirectory( nodes )
-add_subdirectory( external_libs )
+add_subdirectory(tests)
+add_subdirectory(hardware)
+add_subdirectory(plant)
+add_subdirectory(libs)
+add_subdirectory(nodes)
+add_subdirectory(scripts)
+add_subdirectory(external_libs)
