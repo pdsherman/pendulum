@@ -47,7 +47,6 @@ public:
   std::string get_table_name(void) const;
 
 private:
-
   /// Pointer to database
   std::shared_ptr<SqliteDatabase> _db;
 

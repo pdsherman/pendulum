@@ -52,8 +52,7 @@ public:
   /// Constructor
   /// @param [in] f First order diffential equation for x'. x'=f(x, u)
   /// @param [in] type Option for what order of solver and solver coefficients
-  RungaKutta(
-    std::function<X_t(const X_t&, const double)> &&ode,
+  RungaKutta(std::function<X_t(const X_t&, const double)> &&ode,
     const SolverType type = SolverType::kFourthOrderClassic);
 
   /// Default destructor
