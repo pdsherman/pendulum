@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
   // ---  Display on GUI    --- //
   std::string state_topic = "base_control";
   ros::Publisher state_pub = nh.advertise<pendulum::State>(state_topic, 50);
-  util::draw_image(nh, state_topic, 0.0, 0.0, pendulum::DrawSystemRequest::MASS_ONLY, "blue");
+  util::draw_image(nh, state_topic, pendulum::DrawSystemRequest::SINGLE_MASS, {0.0}, {"blue"});
 
   // --- Initialize Variables --- //
   std::shared_ptr<Controller<double, double>> cntrl;

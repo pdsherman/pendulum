@@ -18,7 +18,7 @@ from pendulum.srv import DrawSystem, DrawSystemResponse, DrawSystemRequest
 from pendulum.srv import DeleteSystem, DeleteSystemResponse
 
 # Custom Frame objects
-from button_bar.ButtonBar import ButtonBar
+from display.ButtonBar import ButtonBar
 from ImageCanvas import ImageCanvas
 
 class MainWindow:
@@ -34,7 +34,7 @@ class MainWindow:
         btns.append(("Clear", self.reset_window))
         self.btnBar = ButtonBar(self.root, btns, width=500, height=500)
 
-        self.img = ImageCanvas(self.root) # Display window
+        self.canvas = ImageCanvas(self.root) # Display window
         self.quit_flag = False # Flag for killing GUI
 
         # ROS service server: Because ROS services are handled in a
@@ -44,14 +44,14 @@ class MainWindow:
         self.lock = threading.Lock()
         self.service_queue = []
 
-        rospy.Service('/gui/draw_system', DrawSystem, self.create_new_pendulum)
-        rospy.Service('/gui/delete_system', DeleteSystem, self.remove_pendulum)
+        rospy.Service('/gui/draw_system', DrawSystem, self.create_new_image)
+        rospy.Service('/gui/delete_system', DeleteSystem, self.remove_image)
 
     def update(self):
         self.check_service_calls()
 
         # Update Image
-        self.img.update_drawing()
+        self.canvas.update_drawing()
         # https://stackoverflow.com/questions/29158220/tkinter-understanding-mainloop
         self.root.update_idletasks()
         self.root.update()
@@ -61,23 +61,18 @@ class MainWindow:
         if len(self.service_queue) > 0:
             r = self.service_queue.pop(0)
             if(r[0] == "add"):
-                if r[1].img_type == DrawSystemRequest.PENDULUM:
-                    self.img.add_image("pendulum",
-                        r[1].name, r[1].x, r[1].theta, r[1].base_color, r[1].pendulum_color)
-                elif r[1].img_type == DrawSystemRequest.MASS_ONLY:
-                    self.img.add_image("mass_only",
-                        r[1].name, r[1].x, None, r[1].base_color, None)
+                self.canvas.add_image(r[1].img_type, r[1].name, r[1].x, r[1].color)
             elif r[0] == "remove":
-                self.img.remove_image(r[1].name)
+                self.canvas.remove_image(r[1].name)
         self.lock.release()
 
-    def create_new_pendulum(self, req):
+    def create_new_image(self, req):
         self.lock.acquire()
         self.service_queue.append(("add", req))
         self.lock.release()
         return DrawSystemResponse(True)
 
-    def remove_pendulum(self, req):
+    def remove_image(self, req):
         self.lock.acquire()
         self.service_queue.append(("remove", req))
         self.lock.release()

@@ -13,7 +13,7 @@ import rospy
 import tkinter as tk # 3rd party GUI library
 from tkinter.messagebox import askokcancel
 
-from button_bar.ButtonBar import ButtonBar
+from display.ButtonBar import ButtonBar
 from EncoderGuiHelpers import *
 
 from pendulum.msg import State
@@ -90,8 +90,8 @@ class EncoderTestGui:
     @note: Intended for use as ROS subscriber callback
     """
     def update_angle(self, state):
-        # Can't update display directly as ROS subscribes are in non-main thread
-        self.measurement = state.theta
+        # Can't update display directly since ROS subscribes are in non-main thread
+        self.measurement = state.x[2]
 
     """
     Run update cycles. Should be called in main application loop

@@ -57,7 +57,8 @@ int main(int argc, char *argv[])
   // Publishing object for encoder data
   ros::Publisher pub_state = nh.advertise<pendulum::State>(state_topic_name, 100);
   pendulum::State state;
-  state.x = 0.3; // Not used in this application
+  state.x.resize(4, 0.0);
+  state.x[0] = 0.4;
 
   // Publishing object for logger node
   ros::Publisher pub_log = nh.advertise<pendulum::LoggingData>(log_topic_name, 100);
@@ -74,7 +75,7 @@ int main(int argc, char *argv[])
   while(ros::ok()) {
     // update state msg
     double pos = encdr->position_single();
-    state.theta = pos;
+    state.x[2] = pos;
 	  state.header.seq += 1;
     state.header.stamp = ros::Time::now();
 
@@ -114,7 +115,7 @@ bool node_setup(std::shared_ptr<EncoderBoard> encoder, ros::NodeHandle &nh, cons
   ROS_INFO("Encoder setup sucessful");
 
   // Display object onto GUI
-  if(!util::draw_image(nh, topic_name, 0.3, 0.0)) {
+  if(!util::draw_image(nh, topic_name, pendulum::DrawSystemRequest::PENDULUM, {0.3, 0.0}, {"red", "green"})) {
       ROS_WARN("Timeout waiting for DrawSystem service to exist.");
   }
 

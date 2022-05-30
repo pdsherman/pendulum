@@ -4,12 +4,15 @@ File:   ImageCanvas.py
 Author: pdsherman
 Date:   Jan. 2020
 
-Description: Canvas to draw the representation of the pendulum
+Description: Canvas to draw stuff on
 """
 
 from tkinter import *
 
-from SystemImages import PendulumImage, MassOnlyImage
+import rospy
+from SystemImages import PendulumImage, RectangleImage, SpringImage
+from pendulum.srv import DrawSystem, DrawSystemResponse, DrawSystemRequest
+from pendulum.msg import State
 
 class ImageCanvas(Canvas):
     def __init__(self, parent=None, width=350, height=300, **options):
@@ -19,36 +22,54 @@ class ImageCanvas(Canvas):
         self.pack(fill=BOTH, expand=True, side=LEFT)
 
         # Single Line Showing x-axis
-        self.create_line(0, 275, 1000, 275, fill='green', dash=[20, 10])
+        self.y_offset = 275
+        self.create_line(0, self.y_offset, 1000, self.y_offset, fill='green', dash=[20, 10])
 
-        # Collection of pendulums to display
-        self.pendulums = {}
+        self.images = {} # Collection of object to display as images on canvas
+        self.legend = {} # Names of all objects to display
 
-        # Collection of mass only objects to display
-        self.masses = {}
-
-        # Names of all objects to display
-        self.legend = {}
-
-    def add_image(self, img_type, name, x0, theta0, base_fill, pend_fill):
-        if(self.pendulums.get(name) != None or self.masses.get(name) != None):
+    def add_image(self, img_type, name, x, color):
+        if(self.images.get(name) != None):
             return False
 
-        if(img_type == "pendulum"):
+        # Add correct image type to canvas
+        if(img_type == DrawSystemRequest.PENDULUM):
+            rospy.loginfo("Adding new Pendulum image: " + name)
+
             # Add pendulum
-            pendulum = PendulumImage(x0, theta0, name)
-            base_id = self.create_polygon(pendulum.get_base_points(), fill=base_fill)
-            pend_id = self.create_polygon(pendulum.get_pendulum_points(), fill=pend_fill)
-            circle_id = self.create_oval(pendulum.get_rotation_circle_points(), fill='green')
-            self.pendulums[name] = {"base_id":base_id,
-                        "pend_id":pend_id,
-                        "circle_id":circle_id,
-                        "pendulum":pendulum}
-        elif(img_type == "mass_only"):
+            pendulum = PendulumImage(x)
+            base_id = self.create_polygon(pendulum.get_base_points(), fill=color[0])
+            pend_id = self.create_polygon(pendulum.get_pendulum_points(), fill=color[1])
+            circle_id = self.create_oval(pendulum.get_rotation_circle_points(), fill='black')
+            self.images[name] = {
+                "base_id":   base_id,
+                "pend_id":   pend_id,
+                "circle_id": circle_id,
+                "pendulum":  pendulum,
+                "type":      img_type,
+                "sub":       rospy.Subscriber(name, State, lambda s: pendulum.set_state(s.x))}
+        elif(img_type == DrawSystemRequest.SINGLE_MASS):
+            rospy.loginfo("Adding new Mass image: " + name)
+
             # Add mass object
-            mass = MassOnlyImage(x0, name)
-            base_id = self.create_polygon(mass.get_base_points(), fill=base_fill)
-            self.masses[name] = {"base_id":base_id, "mass":mass}
+            mass = RectangleImage(x, 50.0, 50.0)
+            base_id = self.create_polygon(mass.get_corner_points(), fill=color[0])
+            self.images[name] = {
+                "base_id": base_id,
+                "mass":    mass,
+                "type":    img_type,
+                "sub":     rospy.Subscriber(name, State, lambda s: mass.set_state(s.x))}
+        elif(img_type == DrawSystemRequest.SPRING):
+            rospy.loginfo("Adding new Spring image: " + name)
+
+            # Add spring object
+            spring = SpringImage(x, self.y_offset)
+            spring_id = self.create_line(spring.get_points(), fill=color[0], width=2)
+            self.images[name] = {
+                "spring_id": spring_id,
+                "spring":    spring,
+                "type":      img_type,
+                "sub":       rospy.Subscriber(name, State, lambda s: spring.set_state(s.x))}
         else:
             return False
 
@@ -56,21 +77,24 @@ class ImageCanvas(Canvas):
         place = len(self.legend)+1
         y_offset = 25*place
         text_id = self.create_text(30, y_offset, anchor=W, fill="white", text=name)
-        box_id = self.create_rectangle([15, y_offset-5, 25, y_offset+5], fill=pend_fill)
+        box_id = self.create_rectangle([15, y_offset-5, 25, y_offset+5], fill=color[0])
         self.legend[name] = {"text_id": text_id, "box_id": box_id, "place": place}
 
         return True
 
     def remove_image(self, name):
         # Delete items from canvas first, then remove from dict
-        if(self.pendulums.get(name) != None):
-            self.delete(self.pendulums[name]["base_id"])
-            self.delete(self.pendulums[name]["pend_id"])
-            self.delete(self.pendulums[name]["circle_id"])
-            del self.pendulums[name]
-        elif(self.masses.get(name) != None):
-            self.delete(self.masses[name]["base_id"])
-            del self.masses[name]
+        if(self.images.get(name) != None):
+            rospy.loginfo("Deleting Image: " + name)
+            if(self.images[name]["type"] == DrawSystemRequest.PENDULUM):
+                self.delete(self.images[name]["base_id"])
+                self.delete(self.images[name]["pend_id"])
+                self.delete(self.images[name]["circle_id"])
+            elif(self.images[name]["type"] == DrawSystemRequest.SINGLE_MASS):
+                self.delete(self.images[name]["base_id"])
+            elif(self.images[name]["type"] == DrawSystemRequest.SPRING):
+                self.delete(self.images[name]["spring_id"])
+            del self.images[name]
         else:
             return False
 
@@ -88,11 +112,15 @@ class ImageCanvas(Canvas):
         return True
 
     def update_drawing(self):
-        for key in self.pendulums:
-            pendulum = self.pendulums[key]["pendulum"]
-            self.coords(self.pendulums[key]["base_id"], pendulum.get_base_points())
-            self.coords(self.pendulums[key]["pend_id"], pendulum.get_pendulum_points())
-            self.coords(self.pendulums[key]["circle_id"], pendulum.get_rotation_circle_points())
-        for key in self.masses:
-            mass = self.masses[key]["mass"]
-            self.coords(self.masses[key]["base_id"], mass.get_base_points())
+        for key in self.images:
+            if(self.images[key]["type"] == DrawSystemRequest.PENDULUM):
+                pendulum = self.images[key]["pendulum"]
+                self.coords(self.images[key]["base_id"], pendulum.get_base_points())
+                self.coords(self.images[key]["pend_id"], pendulum.get_pendulum_points())
+                self.coords(self.images[key]["circle_id"], pendulum.get_rotation_circle_points())
+            elif(self.images[key]["type"] == DrawSystemRequest.SINGLE_MASS):
+                mass = self.images[key]["mass"]
+                self.coords(self.images[key]["base_id"], mass.get_corner_points())
+            elif(self.images[key]["type"] == DrawSystemRequest.SPRING):
+                spring = self.images[key]["spring"]
+                self.coords(self.images[key]["spring_id"], spring.get_points())

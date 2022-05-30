@@ -100,11 +100,9 @@ bool check_logging_done(ros::NodeHandle &nh)
 
 bool draw_image(ros::NodeHandle &nh,
   const std::string &topic_name,
-  const double x0,
-  const double theta0,
   const int img_type,
-  const std::string &base_color,
-  const std::string &pendulum_color)
+  const std::vector<double> &x0,
+  const std::vector<std::string> &colors)
 {
   ros::ServiceClient gui_client = nh.serviceClient<pendulum::DrawSystem>("/gui/draw_system");
   if(!service_exists_timeout(gui_client)) {
@@ -113,12 +111,10 @@ bool draw_image(ros::NodeHandle &nh,
   }
 
   pendulum::DrawSystem gui_srv;
-  gui_srv.request.name           = topic_name;
-  gui_srv.request.x              = x0;
-  gui_srv.request.theta          = theta0;
-  gui_srv.request.img_type       = img_type;
-  gui_srv.request.base_color     = base_color;
-  gui_srv.request.pendulum_color = pendulum_color;
+  gui_srv.request.name     = topic_name;
+  gui_srv.request.img_type = img_type;
+  gui_srv.request.x        = x0;
+  gui_srv.request.color    = colors;
 
   gui_client.call(gui_srv);
 

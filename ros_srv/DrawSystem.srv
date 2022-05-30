@@ -1,11 +1,10 @@
-int8 PENDULUM = 1
-int8 MASS_ONLY = 2
+int8 PENDULUM    = 1
+int8 SINGLE_MASS = 2
+int8 SPRING      = 3
 
 string name
-float32 x
-float32 theta
-string base_color
-string pendulum_color
 int8 img_type
+float64[] x
+string[] color
 ---
 bool result

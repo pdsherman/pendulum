@@ -64,19 +64,15 @@ bool check_logging_done(ros::NodeHandle &nh);
 /// object on the simulation GUI.
 /// @param [in] nh ROS node handle object
 /// @param [in] topic_name Name of topic to publish system positions (to update image)
-/// @param [in] x0 Initial x position
-/// @param [in] theta0 Initial theta position
-/// @param [in] img_type Image type [PENDULUM or MASS_ONLY]
-/// @param [in] base_color Color of object base
-/// @param [in] pendulum_color Color of pendulum
+/// @param [in] img_type Image type
+/// @param [in] x0 Initial state of system
+/// @param [in] colors Color of objects to draw
 /// @return True if service exists and returns successfully
 bool draw_image(ros::NodeHandle &nh,
   const std::string &topic_name,
-  const double x0,
-  const double theta0,
-  const int img_type = pendulum::DrawSystemRequest::PENDULUM,
-  const std::string &base_color = "blue",
-  const std::string &pendulum_color = "green");
+  const int img_type,
+  const std::vector<double> &x0,
+  const std::vector<std::string> &colors);
 
 /// Remove image of system from system display GUI
 /// @param [in] nh ROS node handle object
