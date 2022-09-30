@@ -16,8 +16,8 @@
 #include <array>
 #include <sstream>
 
-namespace util {
-
+namespace util 
+{
 /// Given a set of X and Y values where Y=f(X), use linear interpolation to estimate f(x_n)
 /// @note Assumes set X is increasing monotonically increasing and size of X & Y is the same
 /// @param [in] x Set of X values

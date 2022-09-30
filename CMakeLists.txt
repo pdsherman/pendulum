@@ -41,6 +41,7 @@ add_message_files( DIRECTORY ${PROJECT_SOURCE_DIR}/ros_msg
    Control.msg
    Current.msg
    LoggingData.msg
+   Point.msg
 )
 
 add_service_files( DIRECTORY ${PROJECT_SOURCE_DIR}/ros_srv
